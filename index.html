@@ -1670,6 +1670,7 @@ async function onSignIn(accessToken) {
   document.getElementById('auth-signed-out').style.display = 'none';
   document.getElementById('auth-signed-in').style.display  = 'block';
   showToast('Signed in — loading live data…');
+  startAutoRefresh();
   await loadAllData();
 }
 
@@ -1689,6 +1690,7 @@ function handleSignOut() {
   gapi.client.setToken('');
   isSignedIn = false;
   tokenClient = null;
+  stopAutoRefresh();
   document.getElementById('auth-signed-out').style.display = 'block';
   document.getElementById('auth-signed-in').style.display  = 'none';
   showToast('Signed out.');
@@ -1788,6 +1790,43 @@ function nextId(rows, prefix, col=0) {
   return prefix + String(n).padStart(3,'0');
 }
 
+// Update a specific cell range in the sheet
+async function sheetsUpdate(range, values) {
+  const token = gapi.client.getToken()?.access_token;
+  if (!token) throw new Error('No access token — please sign in');
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeRange(range)}?valueInputOption=USER_ENTERED`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({error:{message:res.statusText}}));
+    throw { status: res.status, result: err, message: err?.error?.message || res.statusText };
+  }
+  return res.json();
+}
+
+// Find a row number (1-based) in cached rows by matching col 0 value
+function findRowIndex(rows, id, col=0) {
+  for (let i = 0; i < rows.length; i++) {
+    if ((rows[i][col]||'') === id) return i + 1; // 1-based sheet row
+  }
+  return -1;
+}
+
+// Auto-refresh every 2 minutes when signed in
+let _refreshTimer = null;
+function startAutoRefresh() {
+  stopAutoRefresh();
+  _refreshTimer = setInterval(() => {
+    if (isSignedIn) loadAllData();
+  }, 120000);
+}
+function stopAutoRefresh() {
+  if (_refreshTimer) { clearInterval(_refreshTimer); _refreshTimer = null; }
+}
+
 // ══════════════════════════════════════════════════════════════════
 // LOAD ALL DATA FROM SHEETS
 // ══════════════════════════════════════════════════════════════════
@@ -1842,14 +1881,16 @@ async function loadAllData() {
       type: r[5]||'one-time', year: r[6]||'2025', status: r[8]||'Pending',
     }));
 
-    // Stash ledger rows for next-ID calc
+    // Stash raw rows for next-ID calc and updates
     window._ledgerRows = ledgerRows;
     window._schRows    = schRows;
     window._donorRows  = donorRows;
+    window._orgRows    = orgRows;
+    window._fundRows   = fundRows;
 
     renderDashboard(funds.length ? funds : MOCK_FUNDS, txns.length ? txns : MOCK_TXN);
-    if (liveDonors.length)      renderDonors();
-    if (liveScholarships.length) renderScholarships();
+    renderDonors();
+    renderScholarships();
     renderAckLetters();
 
     showToast('Live data loaded from Google Sheets ✓');
@@ -1891,13 +1932,25 @@ let liveScholarships = null;
 // ══════════════════════════════════════════════════════════════════
 function renderDashboard(funds, txns) {
   // Stat cards
-  const unrestr = funds.filter(f=>f.type==='Unrestricted').reduce((s,f)=>s+(f.bal||f.in-f.out),0);
-  const restr   = funds.filter(f=>f.type==='Restricted').reduce((s,f)=>s+(f.bal||f.in-f.out),0);
-  const ytdIn   = funds.reduce((s,f)=>s+f.in,0);
+  const unrestr     = funds.filter(f=>f.type==='Unrestricted').reduce((s,f)=>s+(f.bal!==undefined?f.bal:f.in-f.out),0);
+  const restr       = funds.filter(f=>f.type==='Restricted').reduce((s,f)=>s+(f.bal!==undefined?f.bal:f.in-f.out),0);
+  // YTD donations = sum of income txns (not fund totals, which include non-donation inflows)
+  const ytdDonations = txns.reduce((s,t)=>s+(t.in||0), 0);
+  const donorCount   = (liveDonors||[]).length + (liveOrgs||[]).length;
+  // Scholarships awarded = sum of all scholarship amounts
+  const schAwarded   = (liveScholarships||[]).reduce((s,x)=>s+x.amount, 0);
+  const schDisbursed = (liveScholarships||[]).reduce((s,x)=>s+x.disbursed, 0);
 
   document.querySelector('#page-dashboard .stat-value.teal').textContent = '$'+fmt(unrestr);
   document.querySelector('#page-dashboard .stat-value.gold').textContent = '$'+fmt(restr);
-  document.querySelectorAll('#page-dashboard .stat-value')[3].textContent = '$'+fmt(ytdIn);
+  // Scholarships awarded card (index 2)
+  const statVals = document.querySelectorAll('#page-dashboard .stat-value');
+  if (statVals[2]) statVals[2].textContent = '$'+fmt(schAwarded);
+  const statMetas = document.querySelectorAll('#page-dashboard .stat-meta');
+  if (statMetas[2]) statMetas[2].textContent = '$'+fmt(schDisbursed)+' disbursed so far';
+  // YTD donations card (index 3)
+  if (statVals[3]) statVals[3].textContent = '$'+fmt(ytdDonations);
+  if (statMetas[3]) statMetas[3].textContent = (donorCount||'—')+' donors this year';
 
   // Fund bars
   const maxBal = Math.max(...funds.map(f=>f.bal||f.in-f.out), 1);
@@ -1920,8 +1973,10 @@ function renderDashboard(funds, txns) {
   }).join('');
   document.querySelector('.fund-list').innerHTML = barHTML;
 
-  // Recent transactions
-  const pillMap = { F001:'pill-gold',F002:'pill-teal',F003:'pill-purple',F004:'pill-teal',F005:'pill-gray',F006:'pill-gray' };
+  // Recent transactions — pill colors cycle across fund IDs dynamically
+  const pillColors = ['pill-gold','pill-teal','pill-purple','pill-teal','pill-gray','pill-gray'];
+  const pillMap = {};
+  funds.forEach((f,i) => { pillMap[f.id] = pillColors[i % pillColors.length]; });
   const txnHTML = txns.slice(0,6).map(t => `
     <tr>
       <td><div>${t.desc}</div><div style="font-size:11px;color:var(--ink3)">${t.date}</div></td>
@@ -2031,6 +2086,16 @@ async function submitTransaction() {
       btn.textContent = 'Saving…'; btn.disabled = true;
       await sheetsAppend('Ledger!A:O', [row]);
       if (window._ledgerRows) window._ledgerRows.push(row);
+
+      // If this is an income txn ≥ $250 linked to a donor, flag ack needed (col G = 'N') in Donors sheet
+      if (txnType === 'income' && parseFloat(amount) >= 250 && donor) {
+        const dRows = window._donorRows || [];
+        const rowIdx = findRowIndex(dRows, donor, 0);
+        if (rowIdx > 0) {
+          try { await sheetsUpdate(`Donors!G${rowIdx}`, [['N']]); } catch(_) {}
+        }
+      }
+
       btn.textContent = 'Save transaction'; btn.disabled = false;
       showToast('Saved to ledger ✓ — refreshing data…');
       clearForm();
@@ -2042,7 +2107,6 @@ async function submitTransaction() {
       document.querySelector('#page-log-transaction .btn-teal').disabled = false;
     }
   } else {
-    // Not signed in — show sign-in prompt
     showToast('Please sign in with Google to save transactions.', true);
   }
 }
@@ -2208,11 +2272,15 @@ async function submitScholarship() {
 function logDisbursement(schId, recipient) {
   showPage('log-transaction');
   setTxnType('expense');
-  document.getElementById('txn-desc').value     = 'Scholarship disbursement — '+recipient;
-  document.getElementById('txn-category').value = 'Scholarship disbursement';
+  document.getElementById('txn-desc').value = 'Scholarship disbursement — '+recipient;
+  // Set category — options have no value attrs so we must set by matching option text
+  const catSel = document.getElementById('txn-category');
+  for (let i = 0; i < catSel.options.length; i++) {
+    if (catSel.options[i].text === 'Scholarship disbursement') { catSel.selectedIndex = i; break; }
+  }
   document.getElementById('txn-restricted').value = 'Y';
-  document.getElementById('purpose-field').style.display = 'flex';
-  document.getElementById('txn-purpose').value  = 'Award '+schId;
+  toggleRestricted(); // show purpose field
+  document.getElementById('txn-purpose').value = 'Award '+schId;
   showToast('Form pre-filled — add amount and submit.');
 }
 
@@ -2297,6 +2365,8 @@ function renderComboboxList(key, query) {
         (it.meta||'').toLowerCase().includes(q))
     : state.items;
 
+  // Store filtered list on state so selectCombobox can look up by index safely
+  state._filtered = filtered;
   state.focusIdx = -1;
 
   if (!filtered.length) {
@@ -2307,7 +2377,7 @@ function renderComboboxList(key, query) {
   listEl.innerHTML = filtered.map((it, i) => `
     <button class="combobox-option${state.selected?.id === it.id ? ' selected' : ''}"
             data-idx="${i}" data-key="${key}"
-            onclick="selectCombobox('${key}', ${JSON.stringify(it).replace(/'/g, "\'")})"
+            onclick="selectComboboxByIdx('${key}', ${i})"
             onmouseenter="focusOption('${key}', ${i})">
       <span class="combobox-badge ${it.badgeClass}">${it.id}</span>
       <span class="combobox-name">${it.name}</span>
@@ -2317,6 +2387,13 @@ function renderComboboxList(key, query) {
 
 function filterCombobox(key, query) {
   renderComboboxList(key, query);
+}
+
+function selectComboboxByIdx(key, idx) {
+  const state = comboboxState[key];
+  const item = (state._filtered || state.items)[idx];
+  if (!item) return;
+  selectCombobox(key, item);
 }
 
 function selectCombobox(key, item) {
@@ -2398,8 +2475,12 @@ function renderAckLetters() {
   const donors = liveDonors || MOCK_DONORS;
   const orgs   = liveOrgs   || MOCK_ORGS;
 
+  // Store refs for modal lookup by index
+  window._ackDonorList = donors.filter(d => d.ackNeeded);
+  window._ackOrgList   = orgs.filter(o => o.ytd > 0);
+
   // Individuals needing ack
-  const needsAck = donors.filter(d => d.ackNeeded);
+  const needsAck = window._ackDonorList;
   const needsEl  = document.getElementById('ack-needs-list');
   const countEl  = document.getElementById('ack-needs-count');
 
@@ -2408,7 +2489,7 @@ function renderAckLetters() {
   if (!needsAck.length) {
     needsEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px;">No individual donors need letters right now.</div>';
   } else {
-    needsEl.innerHTML = needsAck.map(d => `
+    needsEl.innerHTML = needsAck.map((d, i) => `
       <div class="ack-queue-row">
         <div class="record-avatar">${d.initials}</div>
         <div class="record-info" style="flex:1">
@@ -2419,12 +2500,12 @@ function renderAckLetters() {
           ${d.ytd >= 250 ? 'Formal letter' : 'Simple receipt'}
         </span>
         <div class="ack-amount-badge">$${d.ytd.toLocaleString()}</div>
-        <button class="btn btn-ghost btn-sm" onclick="openLetterModal(${JSON.stringify(d).replace(/"/g,"'")}, 'donor')">Preview</button>
+        <button class="btn btn-ghost btn-sm" onclick="openLetterModalByIdx(${i}, 'donor')">Preview</button>
       </div>`).join('');
   }
 
-  // Orgs — show all (no ackNeeded flag on orgs yet, show all with YTD > 0)
-  const orgNeedsAck = orgs.filter(o => o.ytd > 0);
+  // Orgs — show all with YTD > 0
+  const orgNeedsAck = window._ackOrgList;
   const orgEl       = document.getElementById('ack-org-list');
   const orgCountEl  = document.getElementById('ack-org-count');
 
@@ -2433,7 +2514,7 @@ function renderAckLetters() {
   if (!orgNeedsAck.length) {
     orgEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px;">No organization letters needed.</div>';
   } else {
-    orgEl.innerHTML = orgNeedsAck.map(o => `
+    orgEl.innerHTML = orgNeedsAck.map((o, i) => `
       <div class="ack-queue-row">
         <div class="record-avatar org">${o.initials}</div>
         <div class="record-info" style="flex:1">
@@ -2442,13 +2523,20 @@ function renderAckLetters() {
         </div>
         <span class="ack-type-pill ack-type-formal">Formal letter</span>
         <div class="ack-amount-badge">$${o.ytd.toLocaleString()}</div>
-        <button class="btn btn-ghost btn-sm" onclick="openLetterModal(${JSON.stringify(o).replace(/"/g,"'")}, 'org')">Preview</button>
+        <button class="btn btn-ghost btn-sm" onclick="openLetterModalByIdx(${i}, 'org')">Preview</button>
       </div>`).join('');
   }
 
   // Green "all done" banner if nothing pending
   const allDoneEl = document.getElementById('ack-all-done');
   allDoneEl.style.display = (needsAck.length === 0 && orgNeedsAck.length === 0) ? 'flex' : 'none';
+}
+
+function openLetterModalByIdx(idx, type) {
+  const list = type === 'org' ? (window._ackOrgList || []) : (window._ackDonorList || []);
+  const donor = list[idx];
+  if (!donor) return;
+  openLetterModal(donor, type);
 }
 
 function openLetterModal(donor, type) {
@@ -2464,7 +2552,8 @@ function openLetterModal(donor, type) {
 }
 
 function closeLetterModal(e) {
-  if (e && e.target !== document.getElementById('letter-modal-bg') && e.type !== 'click') return;
+  // Allow: backdrop click, or no event (called directly from X button)
+  if (e && e.target !== document.getElementById('letter-modal-bg')) return;
   document.getElementById('letter-modal-bg').classList.remove('open');
   _currentAckDonor = null;
 }
@@ -2473,12 +2562,23 @@ function printLetter() {
   window.print();
 }
 
-function markAckSent() {
+async function markAckSent() {
   if (!_currentAckDonor) return;
-  const name = _currentAckDonor.donor.name;
+  const { donor, type } = _currentAckDonor;
+  const name = donor.name;
+
+  // Write ack = 'Y' (sent) to Donors sheet col G if we have a row for this donor
+  if (isSignedIn && type === 'donor') {
+    const dRows = window._donorRows || [];
+    const rowIdx = findRowIndex(dRows, donor.id, 0);
+    if (rowIdx > 0) {
+      try { await sheetsUpdate(`Donors!G${rowIdx}`, [['Y']]); } catch(_) {}
+    }
+  }
+
   // Optimistically update in-memory ack flag
-  if (_currentAckDonor.type === 'donor') {
-    const d = (liveDonors || MOCK_DONORS).find(x => x.id === _currentAckDonor.donor.id);
+  if (type === 'donor') {
+    const d = (liveDonors || MOCK_DONORS).find(x => x.id === donor.id);
     if (d) d.ackNeeded = false;
   }
   document.getElementById('letter-modal-bg').classList.remove('open');
