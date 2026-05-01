@@ -1,0 +1,2576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venite.org — Financial Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1816;
+    --ink2: #3d3a36;
+    --ink3: #7a756e;
+    --paper: #f7f4ef;
+    --paper2: #ede9e2;
+    --paper3: #e2ddd5;
+    --gold: #b8860b;
+    --gold-lt: #f5edd6;
+    --teal: #0f6e56;
+    --teal-lt: #e0f3ee;
+    --coral: #c0392b;
+    --coral-lt: #fdecea;
+    --purple: #3c3489;
+    --purple-lt: #eae8f7;
+    --r: 10px;
+    --r-lg: 16px;
+    --shadow: 0 1px 3px rgba(26,24,22,0.08), 0 4px 16px rgba(26,24,22,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-brand {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sidebar-brand .wordmark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .sidebar-brand .tagline {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 300;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-auth-slot {
+    margin: 16px 16px 0;
+    padding: 10px 12px;
+    border-radius: var(--r);
+    background: rgba(255,255,255,0.06);
+    border: 1px dashed rgba(255,255,255,0.15);
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .nav-section {
+    padding: 20px 12px 8px;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    padding: 0 8px;
+    margin-bottom: 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.6);
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85); }
+  .nav-item.active { background: rgba(255,255,255,0.12); color: #fff; font-weight: 500; }
+
+  .nav-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    text-align: center;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 36px 40px;
+    max-width: 960px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.2s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--ink3);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: #fff;
+    border-radius: var(--r-lg);
+    padding: 20px 22px;
+    border: 1px solid var(--paper3);
+    box-shadow: var(--shadow);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .stat-value.teal { color: var(--teal); }
+  .stat-value.coral { color: var(--coral); }
+  .stat-value.gold { color: var(--gold); }
+
+  .stat-meta {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  /* ── SECTION CARD ── */
+  .card {
+    background: #fff;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--paper3);
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+  }
+
+  .card-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--paper2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .card-body { padding: 24px; }
+
+  /* ── FUND BARS ── */
+  .fund-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .fund-row { display: flex; flex-direction: column; gap: 5px; }
+
+  .fund-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .fund-name { font-size: 13.5px; color: var(--ink); }
+
+  .fund-name .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 7px;
+    border-radius: 20px;
+    margin-left: 6px;
+    background: var(--teal-lt);
+    color: var(--teal);
+    letter-spacing: 0.02em;
+  }
+
+  .fund-name .badge.unres {
+    background: var(--gold-lt);
+    color: var(--gold);
+  }
+
+  .fund-amount { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--ink); }
+
+  .fund-bar-track {
+    height: 6px;
+    background: var(--paper2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .fund-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--teal);
+    transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .fund-bar-fill.gold { background: var(--gold); }
+
+  /* ── ALERT STRIP ── */
+  .alert-strip {
+    background: var(--coral-lt);
+    border: 1px solid #f5c0bb;
+    border-radius: var(--r);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--coral);
+    margin-bottom: 24px;
+  }
+
+  .alert-strip svg { flex-shrink: 0; }
+
+  /* ── RECENT TXN TABLE ── */
+  .txn-table { width: 100%; border-collapse: collapse; }
+
+  .txn-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--paper2);
+  }
+
+  .txn-table td {
+    padding: 11px 12px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--paper2);
+    color: var(--ink);
+  }
+
+  .txn-table tr:last-child td { border-bottom: none; }
+  .txn-table tr:hover td { background: var(--paper); }
+
+  .amt-in { color: var(--teal); font-weight: 500; }
+  .amt-out { color: var(--coral); font-weight: 500; }
+
+  .pill {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .pill-purple { background: var(--purple-lt); color: var(--purple); }
+  .pill-teal   { background: var(--teal-lt); color: var(--teal); }
+  .pill-gold   { background: var(--gold-lt); color: var(--gold); }
+  .pill-coral  { background: var(--coral-lt); color: var(--coral); }
+  .pill-gray   { background: var(--paper2); color: var(--ink3); }
+
+  /* ── FORMS ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .form-grid.full { grid-template-columns: 1fr; }
+  .form-span2 { grid-column: span 2; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  .field label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink2);
+    letter-spacing: 0.02em;
+  }
+
+  .field label .required { color: var(--coral); margin-left: 2px; }
+
+  .field input,
+  .field select,
+  .field textarea {
+    padding: 10px 14px;
+    border: 1.5px solid var(--paper3);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--paper);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(15,110,86,0.1);
+    background: #fff;
+  }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a756e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  .field .hint {
+    font-size: 11px;
+    color: var(--ink3);
+    font-weight: 300;
+  }
+
+  /* ── TOGGLE PAIR ── */
+  .toggle-pair {
+    display: flex;
+    background: var(--paper2);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+
+  .toggle-btn {
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--ink3);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .toggle-btn.active {
+    background: #fff;
+    color: var(--ink);
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 24px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    text-decoration: none;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .btn-primary:hover { opacity: 0.85; }
+
+  .btn-teal {
+    background: var(--teal);
+    color: #fff;
+  }
+
+  .btn-teal:hover { opacity: 0.88; }
+
+  .btn-ghost {
+    background: var(--paper2);
+    color: var(--ink2);
+  }
+
+  .btn-ghost:hover { background: var(--paper3); }
+
+  .btn-sm { padding: 7px 14px; font-size: 12.5px; }
+
+  /* ── SUCCESS TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--ink);
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: var(--r);
+    font-size: 13.5px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.35s;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── DONOR / SCHOLARSHIP LISTS ── */
+  .record-list { display: flex; flex-direction: column; gap: 1px; }
+
+  .record-row {
+    display: flex;
+    align-items: center;
+    padding: 13px 16px;
+    border-radius: 8px;
+    gap: 14px;
+    transition: background 0.12s;
+    cursor: pointer;
+  }
+
+  .record-row:hover { background: var(--paper); }
+
+  .record-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--paper2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink2);
+    flex-shrink: 0;
+  }
+
+  .record-avatar.org {
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  .record-info { flex: 1; min-width: 0; }
+  .record-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .record-meta { font-size: 12px; color: var(--ink3); margin-top: 1px; }
+
+  .record-right { text-align: right; flex-shrink: 0; }
+  .record-amount { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--ink); }
+  .record-date { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+
+  /* ── ACK FLAG ── */
+  .ack-needed {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--coral);
+    background: var(--coral-lt);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-weight: 500;
+    margin-top: 3px;
+  }
+
+  /* ── SCHOLARSHIP STATUS ── */
+  .sch-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sch-bar-track {
+    flex: 1;
+    height: 5px;
+    background: var(--paper2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .sch-bar-fill {
+    height: 100%;
+    background: var(--purple);
+    border-radius: 3px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--paper2);
+    margin: 24px 0;
+  }
+
+  /* ── SEARCH / FILTER BAR ── */
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 9px 14px;
+    border: 1.5px solid var(--paper3);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-input:focus { border-color: var(--teal); }
+
+  /* ── MULTI-YEAR FLAG ── */
+  .multiyear-block {
+    background: var(--purple-lt);
+    border: 1px solid #c8c4f0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--purple);
+    display: none;
+  }
+
+  .multiyear-block.visible { display: block; }
+
+  /* ── MOBILE TOP BAR ── */
+  .mobile-topbar {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    background: var(--ink);
+    z-index: 90;
+    align-items: center;
+    padding: 0 16px;
+    justify-content: space-between;
+  }
+
+  .mobile-topbar .wordmark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+
+  .mobile-topbar .page-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 300;
+  }
+
+  /* ── MOBILE BOTTOM NAV ── */
+  .mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: #fff;
+    border-top: 1px solid var(--paper3);
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+    z-index: 90;
+  }
+
+  .mobile-nav-inner {
+    display: flex;
+    height: 100%;
+    align-items: stretch;
+  }
+
+  .mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--ink3);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    padding: 6px 4px 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-item svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.15s;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--teal);
+    font-weight: 500;
+  }
+
+  .mobile-nav-item.active svg {
+    transform: translateY(-1px);
+  }
+
+  .mobile-nav-item:active { background: var(--paper); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 680px) {
+    body { flex-direction: column; }
+    .sidebar { display: none; }
+    .mobile-topbar { display: flex; }
+    .mobile-bottom-nav { display: block; }
+    .main {
+      padding: 16px 16px 80px;
+      margin-top: 52px;
+    }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-span2 { grid-column: span 1; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    /* stack the two-column dashboard cards */
+    .main > div[style*="grid-template-columns:1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+    .page-title { font-size: 24px; }
+  }
+
+  /* ── SEARCHABLE COMBOBOX ── */
+  .combobox-wrap {
+    position: relative;
+  }
+
+  .combobox-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--paper3);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+  }
+
+  .combobox-input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(15,110,86,0.1);
+    background: #fff;
+  }
+
+  .combobox-input.has-value {
+    background: #fff;
+    font-weight: 500;
+  }
+
+  .combobox-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1.5px solid var(--paper3);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 200;
+    overflow: hidden;
+    display: none;
+    max-height: 260px;
+    flex-direction: column;
+  }
+
+  .combobox-dropdown.open { display: flex; }
+
+  .combobox-search-wrap {
+    padding: 10px 12px 6px;
+    border-bottom: 1px solid var(--paper2);
+    flex-shrink: 0;
+  }
+
+  .combobox-search {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1.5px solid var(--paper3);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    background: var(--paper);
+  }
+
+  .combobox-search:focus { border-color: var(--teal); background: #fff; }
+
+  .combobox-list {
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .combobox-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .combobox-option:hover, .combobox-option.focused {
+    background: var(--paper);
+  }
+
+  .combobox-option.selected { background: var(--teal-lt); }
+
+  .combobox-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: var(--paper2);
+    color: var(--ink3);
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+    font-family: monospace;
+  }
+
+  .combobox-badge.donor  { background: var(--teal-lt);   color: var(--teal);   }
+  .combobox-badge.org    { background: var(--purple-lt);  color: var(--purple); }
+  .combobox-badge.sch    { background: var(--amber-lt, #FFF3CC); color: var(--gold);   }
+
+  .combobox-name {
+    font-size: 13.5px;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .combobox-meta {
+    font-size: 11px;
+    color: var(--ink3);
+  }
+
+  .combobox-empty {
+    padding: 16px 14px;
+    font-size: 13px;
+    color: var(--ink3);
+    text-align: center;
+  }
+
+  .combobox-add {
+    padding: 10px 14px;
+    border-top: 1px solid var(--paper2);
+    font-size: 12.5px;
+    color: var(--teal);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    width: 100%;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .combobox-add:hover { background: var(--teal-lt); }
+
+  /* ── ACK LETTER STYLES ── */
+  .ack-queue-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 14px;
+    border-radius: 8px;
+    transition: background 0.12s;
+  }
+  .ack-queue-row:hover { background: var(--paper); }
+  .ack-amount-badge {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--ink);
+    white-space: nowrap;
+    min-width: 72px;
+    text-align: right;
+  }
+  .ack-type-pill {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .ack-type-formal  { background: var(--purple-lt); color: var(--purple); }
+  .ack-type-minimal { background: var(--paper2);    color: var(--ink3);   }
+
+  /* Print / letter preview modal */
+  .letter-modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,24,22,0.55);
+    z-index: 300;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px 16px;
+    overflow-y: auto;
+  }
+  .letter-modal-bg.open { display: flex; }
+  .letter-modal {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 680px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .letter-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--paper2);
+    background: var(--paper);
+  }
+  .letter-modal-title { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .letter-modal-actions { display: flex; gap: 8px; }
+  .letter-preview {
+    padding: 40px 48px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #111;
+    min-height: 400px;
+  }
+  .letter-preview.minimal { padding: 28px 32px; }
+  .letter-header-block { margin-bottom: 32px; }
+  .letter-org-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1a1816;
+    font-family: 'DM Serif Display', Georgia, serif;
+  }
+  .letter-org-meta { font-size: 11.5px; color: #666; margin-top: 3px; font-family: Arial, sans-serif; }
+  .letter-divider { border: none; border-top: 2px solid #1a1816; margin: 12px 0 24px; }
+  .letter-date { margin-bottom: 20px; }
+  .letter-salutation { margin-bottom: 16px; font-weight: 600; }
+  .letter-body p { margin-bottom: 12px; }
+  .letter-irs-box {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 20px 0;
+    background: #fafafa;
+    font-size: 12.5px;
+    color: #333;
+  }
+  .letter-closing { margin-top: 28px; }
+  .letter-sig-line {
+    margin-top: 40px;
+    border-top: 1px solid #999;
+    width: 200px;
+    padding-top: 6px;
+    font-size: 12px;
+    color: #555;
+  }
+  .letter-receipt-box {
+    border: 2px solid #1a1816;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .letter-receipt-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .letter-receipt-row:last-child { border-bottom: none; }
+  .letter-receipt-label { color: #555; }
+  .letter-receipt-value { font-weight: 600; }
+  @media print {
+    body > *:not(.letter-modal-bg) { display: none !important; }
+    .letter-modal-bg { position: static; padding: 0; background: none; display: block !important; }
+    .letter-modal { box-shadow: none; border-radius: 0; max-width: 100%; }
+    .letter-modal-header { display: none; }
+    .letter-preview { padding: 0; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ══ MOBILE TOP BAR ════════════════════════════════════════════ -->
+<div class="mobile-topbar">
+  <div class="wordmark">Venite.org</div>
+  <div class="page-label" id="mobile-page-label">Dashboard</div>
+</div>
+
+<!-- ══ MOBILE BOTTOM NAV ═════════════════════════════════════════ -->
+<nav class="mobile-bottom-nav">
+  <div class="mobile-nav-inner">
+    <button class="mobile-nav-item active" id="mnav-dashboard" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="2" width="7" height="7" rx="1.5"/>
+        <rect x="11" y="2" width="7" height="7" rx="1.5"/>
+        <rect x="2" y="11" width="7" height="7" rx="1.5"/>
+        <rect x="11" y="11" width="7" height="7" rx="1.5"/>
+      </svg>
+      Dashboard
+    </button>
+    <button class="mobile-nav-item" id="mnav-log-transaction" onclick="showPage('log-transaction')">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="10" cy="10" r="8"/>
+        <line x1="10" y1="6" x2="10" y2="14"/>
+        <line x1="6" y1="10" x2="14" y2="10"/>
+      </svg>
+      Log
+    </button>
+    <button class="mobile-nav-item" id="mnav-donors" onclick="showPage('donors')">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="8" cy="6" r="3.5"/>
+        <path d="M2 18c0-3.5 2.5-6 6-6s6 2.5 6 6"/>
+        <path d="M14 2l2 2 3.5-3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Donors
+    </button>
+    <button class="mobile-nav-item" id="mnav-scholarships" onclick="showPage('scholarships')">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M10 2l2.5 5.5H18l-4.5 3.5 1.7 5.5L10 13.5l-5.2 3 1.7-5.5L2 7.5h5.5z"/>
+      </svg>
+      Awards
+    </button>
+  </div>
+</nav>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="wordmark">Venite.org</div>
+    <div class="tagline">Financial Portal</div>
+  </div>
+
+  <div class="sidebar-auth-slot" id="auth-slot">
+    <div id="auth-signed-out" style="text-align:center;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Board Member Portal</div>
+      <button onclick="handleSignIn()" style="
+        display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;
+        background:#fff;border:none;border-radius:6px;cursor:pointer;
+        font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#1a1816;">
+        <svg width="14" height="14" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Sign in with Google
+      </button>
+    </div>
+    <div id="auth-signed-in" style="display:none;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="user-avatar" style="
+          width:32px;height:32px;border-radius:50%;flex-shrink:0;
+          background:linear-gradient(135deg,#4A3D8F,#0D6E56);
+          display:flex;align-items:center;justify-content:center;
+          font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+          color:#fff;letter-spacing:0.02em;">
+        </div>
+        <div style="min-width:0;">
+          <div id="user-name" style="font-size:12px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;"></div>
+          <button onclick="handleSignOut()" style="font-size:10px;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;margin-top:1px;">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav-section">
+    <div class="nav-label">Overview</div>
+    <button class="nav-item active" onclick="showPage('dashboard')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/>
+        <rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>
+      </svg>
+      Dashboard
+    </button>
+  </nav>
+
+  <nav class="nav-section">
+    <div class="nav-label">Transactions</div>
+    <button class="nav-item" onclick="showPage('log-transaction')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/>
+      </svg>
+      Log transaction
+    </button>
+  </nav>
+
+  <nav class="nav-section">
+    <div class="nav-label">Records</div>
+    <button class="nav-item" onclick="showPage('donors')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="6" cy="5" r="3"/><path d="M1 14c0-3 2-5 5-5s5 2 5 5"/>
+        <path d="M11 1l1.5 1.5L15 0" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Donors
+    </button>
+    <button class="nav-item" onclick="showPage('scholarships')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M8 1L10 6h5l-4 3 1.5 5L8 11l-4.5 3L5 9 1 6h5z"/>
+      </svg>
+      Scholarships
+    </button>
+    <button class="nav-item" onclick="showPage('ack-letters')" id="nav-ack">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="2" width="12" height="12" rx="1.5"/>
+        <line x1="5" y1="5.5" x2="11" y2="5.5"/><line x1="5" y1="8" x2="11" y2="8"/>
+        <line x1="5" y1="10.5" x2="8.5" y2="10.5"/>
+      </svg>
+      Ack. Letters
+    </button>
+  </nav>
+</aside>
+
+<!-- ══ MAIN ═════════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── DASHBOARD ───────────────────────────────────────────── -->
+  <div id="page-dashboard" class="page active">
+    <div class="page-header">
+      <div class="page-title">Good morning, board.</div>
+      <div class="page-subtitle">Here's where Venite stands today — <span id="dash-date"></span></div>
+    </div>
+
+    <div class="alert-strip">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="8.5"/><circle cx="8" cy="11" r="0.5" fill="currentColor"/>
+      </svg>
+      <strong>2 donations</strong>&nbsp;over $250 are missing acknowledgment letters. &nbsp;
+      <button class="btn btn-ghost btn-sm" onclick="showPage('ack-letters')">Review letters</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Unrestricted cash</div>
+        <div class="stat-value teal">$7,350</div>
+        <div class="stat-meta">General + reserve funds</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Restricted funds</div>
+        <div class="stat-value gold">$8,700</div>
+        <div class="stat-meta">Scholarship + designated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Scholarships awarded</div>
+        <div class="stat-value">$3,200</div>
+        <div class="stat-meta">$1,600 disbursed so far</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">YTD donations</div>
+        <div class="stat-value">$16,050</div>
+        <div class="stat-meta">18 donors this year</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Fund balances</span>
+          <span class="pill pill-gray" style="font-size:11px;">Live</span>
+        </div>
+        <div class="card-body">
+          <div class="fund-list">
+            <div class="fund-row">
+              <div class="fund-row-top">
+                <div class="fund-name">General operating <span class="badge unres">Unrestr.</span></div>
+                <div class="fund-amount">$4,850</div>
+              </div>
+              <div class="fund-bar-track"><div class="fund-bar-fill gold" style="width:60%"></div></div>
+            </div>
+            <div class="fund-row">
+              <div class="fund-row-top">
+                <div class="fund-name">Scholarship — general <span class="badge">Restr.</span></div>
+                <div class="fund-amount">$5,700</div>
+              </div>
+              <div class="fund-bar-track"><div class="fund-bar-fill" style="width:71%"></div></div>
+            </div>
+            <div class="fund-row">
+              <div class="fund-row-top">
+                <div class="fund-name">Music scholarship <span class="badge">Restr.</span></div>
+                <div class="fund-amount">$3,000</div>
+              </div>
+              <div class="fund-bar-track"><div class="fund-bar-fill" style="width:37%"></div></div>
+            </div>
+            <div class="fund-row">
+              <div class="fund-row-top">
+                <div class="fund-name">Travel & conference <span class="badge">Restr.</span></div>
+                <div class="fund-amount">$850</div>
+              </div>
+              <div class="fund-bar-track"><div class="fund-bar-fill" style="width:11%;background:var(--gold)"></div></div>
+            </div>
+            <div class="fund-row">
+              <div class="fund-row-top">
+                <div class="fund-name">Capital reserve <span class="badge unres">Unrestr.</span></div>
+                <div class="fund-amount">$2,500</div>
+              </div>
+              <div class="fund-bar-track"><div class="fund-bar-fill gold" style="width:31%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent transactions</span>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('log-transaction')">+ Add</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="txn-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Fund</th>
+                <th style="text-align:right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div>Smith Foundation grant</div><div style="font-size:11px;color:var(--ink3)">Apr 22</div></td>
+                <td><span class="pill pill-teal">F002</span></td>
+                <td class="amt-in" style="text-align:right">+$5,000</td>
+              </tr>
+              <tr>
+                <td><div>Scholarship — R. Chen</div><div style="font-size:11px;color:var(--ink3)">Apr 25</div></td>
+                <td><span class="pill pill-purple">F002</span></td>
+                <td class="amt-out" style="text-align:right">−$800</td>
+              </tr>
+              <tr>
+                <td><div>Stripe donation — J. Doe</div><div style="font-size:11px;color:var(--ink3)">Apr 20</div></td>
+                <td><span class="pill pill-gold">F001</span></td>
+                <td class="amt-in" style="text-align:right">+$250</td>
+              </tr>
+              <tr>
+                <td><div>Website hosting</div><div style="font-size:11px;color:var(--ink3)">Apr 15</div></td>
+                <td><span class="pill pill-gray">F001</span></td>
+                <td class="amt-out" style="text-align:right">−$180</td>
+              </tr>
+              <tr>
+                <td><div>First Baptist donation</div><div style="font-size:11px;color:var(--ink3)">Apr 10</div></td>
+                <td><span class="pill pill-teal">F003</span></td>
+                <td class="amt-in" style="text-align:right">+$1,000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOG TRANSACTION ─────────────────────────────────────── -->
+  <div id="page-log-transaction" class="page">
+    <div class="page-header">
+      <div class="page-title">Log a transaction</div>
+      <div class="page-subtitle">Record every dollar that comes in or goes out.</div>
+    </div>
+
+    <div class="toggle-pair">
+      <button class="toggle-btn active" id="toggle-income" onclick="setTxnType('income')">Income / donation</button>
+      <button class="toggle-btn" id="toggle-expense" onclick="setTxnType('expense')">Expense / disbursement</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" id="txn-form-title">Recording income</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="field">
+            <label>Date <span class="required">*</span></label>
+            <input type="date" id="txn-date">
+          </div>
+          <div class="field">
+            <label>Amount ($) <span class="required">*</span></label>
+            <input type="number" id="txn-amount" placeholder="0.00" min="0" step="0.01">
+          </div>
+
+          <div class="field form-span2">
+            <label>Description <span class="required">*</span></label>
+            <input type="text" id="txn-desc" placeholder="e.g. Donation — Jane Smith, or Office supplies">
+          </div>
+
+          <div class="field">
+            <label>Fund <span class="required">*</span></label>
+            <select id="txn-fund">
+              <option value="">Select fund…</option>
+              <option value="F001">F001 — General operating</option>
+              <option value="F002">F002 — Scholarship general</option>
+              <option value="F003">F003 — Music scholarship</option>
+              <option value="F004">F004 — Travel & conference</option>
+              <option value="F005">F005 — Capital reserve</option>
+              <option value="F006">F006 — Emergency reserve</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Category</label>
+            <select id="txn-category">
+              <option value="">Select…</option>
+              <option>Individual donation</option>
+              <option>Org / corporate donation</option>
+              <option>Grant</option>
+              <option>Scholarship disbursement</option>
+              <option>Operating expense</option>
+              <option>Program expense</option>
+              <option>Payroll</option>
+              <option>Capital expense</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Payment method</label>
+            <select id="txn-method">
+              <option value="">Select…</option>
+              <option>Check</option>
+              <option>Cash</option>
+              <option>PayPal</option>
+              <option>Venmo</option>
+              <option>Credit card / Stripe</option>
+              <option>Grant / wire</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="field" id="donor-field">
+            <label id="donor-field-label">Donor / payee</label>
+            <div class="combobox-wrap" id="donor-combobox-wrap">
+              <input class="combobox-input" id="txn-donor-display"
+                     placeholder="Search by name or ID…"
+                     readonly
+                     onclick="openCombobox('donor')"
+                     autocomplete="off">
+              <input type="hidden" id="txn-donor">
+              <div class="combobox-dropdown" id="donor-dropdown">
+                <div class="combobox-search-wrap">
+                  <input class="combobox-search" id="donor-search"
+                         placeholder="Type to search…"
+                         oninput="filterCombobox('donor', this.value)"
+                         onkeydown="comboboxKey(event, 'donor')">
+                </div>
+                <div class="combobox-list" id="donor-list-drop"></div>
+                <button class="combobox-add" onclick="clearCombobox('donor')">
+                  ✕ Clear selection
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Receipt / reference #</label>
+            <input type="text" id="txn-ref" placeholder="CK#1046, PP-9923, ST-5512…">
+          </div>
+
+          <div class="field">
+            <label>Restricted funds?</label>
+            <select id="txn-restricted" onchange="toggleRestricted()">
+              <option value="N">No — general use</option>
+              <option value="Y">Yes — designated purpose</option>
+            </select>
+          </div>
+
+          <div class="field form-span2" id="purpose-field" style="display:none">
+            <label>Designated purpose <span class="required">*</span></label>
+            <input type="text" id="txn-purpose" placeholder="e.g. Music scholarships only, per donor letter on file">
+          </div>
+
+          <div class="field form-span2">
+            <label>Notes / approved by</label>
+            <textarea id="txn-notes" placeholder="Board member who approved, acknowledgment sent, context…"></textarea>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button class="btn btn-teal" onclick="submitTransaction()">Save transaction</button>
+          <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+          <span id="ack-reminder" style="display:none;font-size:12px;color:var(--coral);margin-left:4px;">
+            IRS acknowledgment letter required (donation ≥ $250)
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DONORS ──────────────────────────────────────────────── -->
+  <div id="page-donors" class="page">
+    <div class="page-header">
+      <div class="page-title">Donors</div>
+      <div class="page-subtitle">Individuals and organizations — giving history and acknowledgment status.</div>
+    </div>
+
+    <div class="filter-bar">
+      <input class="search-input" type="text" placeholder="Search donors by name or ID…" oninput="filterDonors(this.value)">
+      <button class="btn btn-teal btn-sm" onclick="showPage('log-transaction')">+ Log donation</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header">
+        <span class="card-title">Individuals</span>
+        <span class="pill pill-gray">5 donors</span>
+      </div>
+      <div class="card-body" style="padding:8px 8px;">
+        <div class="record-list" id="donor-list">
+          <!-- injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Organizations &amp; grantors</span>
+        <span class="pill pill-gray">2 orgs</span>
+      </div>
+      <div class="card-body" style="padding:8px 8px;">
+        <div class="record-list" id="org-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCHOLARSHIPS ─────────────────────────────────────────── -->
+  <div id="page-scholarships" class="page">
+    <div class="page-header">
+      <div class="page-title">Scholarships</div>
+      <div class="page-subtitle">Awards, recipients, and disbursement tracking.</div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+      <button class="btn btn-teal" onclick="toggleNewScholarship()">+ New award</button>
+    </div>
+
+    <!-- New scholarship form (hidden by default) -->
+    <div id="sch-form-card" class="card" style="display:none;margin-bottom:24px;">
+      <div class="card-header">
+        <span class="card-title">Create scholarship award</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="field form-span2">
+            <label>Recipient <span class="required">*</span></label>
+            <div class="combobox-wrap" id="sch-combobox-wrap">
+              <input class="combobox-input" id="sch-name-display"
+                     placeholder="Search donors by name or ID…"
+                     readonly
+                     onclick="openCombobox('sch')"
+                     autocomplete="off">
+              <input type="hidden" id="sch-name">
+              <input type="hidden" id="sch-contact">
+              <div class="combobox-dropdown" id="sch-dropdown">
+                <div class="combobox-search-wrap">
+                  <input class="combobox-search" id="sch-search"
+                         placeholder="Type to search…"
+                         oninput="filterCombobox('sch', this.value)"
+                         onkeydown="comboboxKey(event, 'sch')">
+                </div>
+                <div class="combobox-list" id="sch-list-drop"></div>
+                <button class="combobox-add" onclick="clearCombobox('sch')">
+                  ✕ Clear selection
+                </button>
+              </div>
+            </div>
+            <span class="hint">Links scholarship to an existing donor record. Or type a new name below.</span>
+          </div>
+          <div class="field">
+            <label>Or enter new recipient name</label>
+            <input type="text" id="sch-name-manual" placeholder="Full name (if not in donor list)">
+          </div>
+          <div class="field">
+            <label>Contact</label>
+            <input type="text" id="sch-contact-manual" placeholder="Email or phone">
+          </div>
+          <div class="field">
+            <label>Award amount ($) <span class="required">*</span></label>
+            <input type="number" id="sch-amount" placeholder="0.00" step="0.01">
+          </div>
+          <div class="field">
+            <label>Fund source <span class="required">*</span></label>
+            <select id="sch-fund">
+              <option value="">Select…</option>
+              <option value="F002">F002 — Scholarship general</option>
+              <option value="F003">F003 — Music scholarship</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Award type</label>
+            <select id="sch-type" onchange="toggleMultiYear()">
+              <option value="one-time">One-time</option>
+              <option value="multi-year">Multi-year</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Award year</label>
+            <input type="number" id="sch-year" value="2025" min="2020" max="2035">
+          </div>
+          <div class="field form-span2">
+            <label>Purpose / notes</label>
+            <textarea id="sch-notes" placeholder="Scholarship purpose, selection rationale, board approval date…"></textarea>
+          </div>
+        </div>
+
+        <div class="multiyear-block" id="multiyear-block">
+          <strong>Multi-year commitment:</strong> This award creates a future liability on Venite's books.
+          Log each year's disbursement separately in the Ledger when payment is made.
+          Ensure sufficient fund balance exists before committing.
+        </div>
+
+        <div class="divider"></div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-teal" onclick="submitScholarship()">Create award</button>
+          <button class="btn btn-ghost" onclick="toggleNewScholarship()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active awards -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Active awards — 2025</span>
+        <span class="pill pill-purple">4 awards</span>
+      </div>
+      <div class="card-body" style="padding:8px 8px;">
+        <div class="record-list" id="scholarship-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ACK LETTERS ─────────────────────────────────────────── -->
+  <div id="page-ack-letters" class="page">
+    <div class="page-header">
+      <div class="page-title">Acknowledgment Letters</div>
+      <div class="page-subtitle">IRS-required written acknowledgment for donations. Formal letterhead for gifts ≥$250 · Simple receipt for smaller gifts.</div>
+    </div>
+
+    <div class="alert-strip" id="ack-all-done" style="display:none;background:var(--teal-lt);border-color:#a0d9cc;">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--teal)" stroke-width="1.5">
+        <circle cx="8" cy="8" r="6.5"/><polyline points="5,8 7,10 11,6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="color:var(--teal);font-weight:500;">All acknowledgment letters are up to date.</span>
+    </div>
+
+    <!-- Needs letters -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <span class="card-title">Needs acknowledgment letter</span>
+        <span class="pill pill-coral" id="ack-needs-count" style="background:var(--coral-lt);color:var(--coral);">0 pending</span>
+      </div>
+      <div class="card-body" style="padding:8px;">
+        <div id="ack-needs-list">
+          <div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Org / grant acknowledgments -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Organizations &amp; grants needing acknowledgment</span>
+        <span class="pill pill-gray" id="ack-org-count">0 pending</span>
+      </div>
+      <div class="card-body" style="padding:8px;">
+        <div id="ack-org-list">
+          <div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LETTER PREVIEW MODAL ─────────────────────────────────── -->
+  <div class="letter-modal-bg" id="letter-modal-bg" onclick="closeLetterModal(event)">
+    <div class="letter-modal" onclick="event.stopPropagation()">
+      <div class="letter-modal-header">
+        <span class="letter-modal-title" id="letter-modal-title">Acknowledgment Letter</span>
+        <div class="letter-modal-actions">
+          <button class="btn btn-ghost btn-sm" onclick="printLetter()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="1" width="10" height="8" rx="1"/><rect x="3" y="10" width="10" height="5" rx="1"/>
+              <path d="M6 13h4M3 6h10"/>
+            </svg>
+            Print / PDF
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="markAckSent()">
+            ✓ Mark sent
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="closeLetterModal()">✕</button>
+        </div>
+      </div>
+      <div id="letter-preview-content" class="letter-preview"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="8" cy="8" r="6.5"/><polyline points="5,8 7,10 11,6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span id="toast-msg">Saved.</span>
+</div>
+
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONFIG — Venite.org Google Sheets API
+// ══════════════════════════════════════════════════════════════════
+const SHEET_ID    = '1c4nbEfgu8BopeRypjPYrci9t07pSmzJpsbZkEHWzPT4';
+const API_KEY     = 'AIzaSyBXteBBcVN-6wE3YNOKDhCvcsOFo0PeWhg';
+const CLIENT_ID   = '890314305107-38eqeqg2amf9uhpuv5segtfb22dglok5.apps.googleusercontent.com';
+const SCOPES      = 'https://www.googleapis.com/auth/spreadsheets';
+const DISCOVERY   = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
+
+// ── Fallback mock data (shown before sign-in / on API error) ──────
+const MOCK_FUNDS = [
+  { id:'F001', name:'General operating',      type:'Unrestricted', in:7925, out:3075 },
+  { id:'F002', name:'Scholarship — general',  type:'Restricted',   in:7500, out:1800 },
+  { id:'F003', name:'Music scholarship',      type:'Restricted',   in:4000, out:1000 },
+  { id:'F004', name:'Travel & conference',    type:'Restricted',   in:1050, out:200  },
+  { id:'F005', name:'Capital reserve',        type:'Unrestricted', in:2500, out:0    },
+];
+
+const MOCK_TXN = [
+  { date:'Apr 22', desc:'Smith Foundation grant',    fund:'F002', in:5000,  out:0   },
+  { date:'Apr 25', desc:'Scholarship — R. Chen',     fund:'F002', in:0,     out:800 },
+  { date:'Apr 20', desc:'Stripe donation — J. Doe',  fund:'F001', in:250,   out:0   },
+  { date:'Apr 15', desc:'Website hosting',           fund:'F001', in:0,     out:180 },
+  { date:'Apr 10', desc:'First Baptist donation',    fund:'F003', in:1000,  out:0   },
+];
+
+// ── Auth state ────────────────────────────────────────────────────
+// Auth state managed in boot block above
+
+// ── AUTH BOOT ─────────────────────────────────────────────────────
+// Waits for both gapi and google.accounts to be available,
+// then wires everything up. Polling is more reliable than onload
+// callbacks across different browsers and hosting environments.
+
+let tokenClient = null;
+let isSignedIn  = false;
+
+async function onSignIn(accessToken) {
+  isSignedIn = true;
+  gapi.client.setToken({ access_token: accessToken });
+
+  // Fetch user profile
+  try {
+    const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
+    const u = await r.json();
+    const displayName = u.given_name || u.name || 'Board member';
+    const ini = displayName.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('user-name').textContent   = displayName;
+    document.getElementById('user-avatar').textContent = ini;
+  } catch(_) {
+    document.getElementById('user-name').textContent   = 'Board member';
+    document.getElementById('user-avatar').textContent = 'BM';
+  }
+
+  document.getElementById('auth-signed-out').style.display = 'none';
+  document.getElementById('auth-signed-in').style.display  = 'block';
+  showToast('Signed in — loading live data…');
+  await loadAllData();
+}
+
+function handleSignIn() {
+  if (!tokenClient) {
+    showToast('Still loading — try again in 2 seconds', true);
+    return;
+  }
+  tokenClient.requestAccessToken({ prompt: '' });
+}
+
+function handleSignOut() {
+  const token = gapi.client.getToken();
+  if (token) {
+    try { google.accounts.oauth2.revoke(token.access_token); } catch(_) {}
+  }
+  gapi.client.setToken('');
+  isSignedIn = false;
+  tokenClient = null;
+  document.getElementById('auth-signed-out').style.display = 'block';
+  document.getElementById('auth-signed-in').style.display  = 'none';
+  showToast('Signed out.');
+  renderDashboard(MOCK_FUNDS, MOCK_TXN);
+  // Re-init token client for next sign-in
+  initTokenClient();
+}
+
+function initTokenClient() {
+  try {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: async (resp) => {
+        if (resp.error) {
+          showToast('Sign-in error: ' + resp.error, true);
+          return;
+        }
+        await onSignIn(resp.access_token);
+      }
+    });
+  } catch(e) {
+    console.warn('initTokenClient failed:', e);
+  }
+}
+
+// Poll until both libraries are ready, then boot
+(function boot() {
+  const gapiReady = typeof gapi !== 'undefined';
+  const gisReady  = typeof google !== 'undefined' && typeof google.accounts !== 'undefined';
+
+  if (!gapiReady || !gisReady) {
+    setTimeout(boot, 100);
+    return;
+  }
+
+  // Init gapi client (no discovery doc needed — we use fetch directly)
+  gapi.load('client', async () => {
+    try {
+      await gapi.client.init({ apiKey: API_KEY });
+    } catch(e) {
+      console.warn('gapi.client.init warning:', e);
+    }
+    // Init GIS token client
+    initTokenClient();
+  });
+})();
+
+// Expose for old-style onload attrs (no-op if called, boot() handles it)
+function gapiLoaded() {}
+function gisLoaded()  {}
+// handleSignOut defined in boot block
+
+// ══════════════════════════════════════════════════════════════════
+// SHEETS READ / WRITE HELPERS
+// ══════════════════════════════════════════════════════════════════
+function encodeRange(range) {
+  // Encode sheet name (before !) but leave A1 notation (after !) unencoded
+  const bang = range.indexOf('!');
+  if (bang === -1) return encodeURIComponent(range);
+  return encodeURIComponent(range.slice(0, bang)) + '!' + range.slice(bang + 1);
+}
+
+async function sheetsGet(range) {
+  const token = gapi.client.getToken()?.access_token;
+  if (!token) throw new Error('No access token — please sign in');
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeRange(range)}`;
+  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({error:{message:res.statusText}}));
+    throw { status: res.status, result: err, message: err?.error?.message || res.statusText };
+  }
+  const data = await res.json();
+  return data.values || [];
+}
+
+async function sheetsAppend(range, values) {
+  const token = gapi.client.getToken()?.access_token;
+  if (!token) throw new Error('No access token — please sign in');
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeRange(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({error:{message:res.statusText}}));
+    throw { status: res.status, result: err, message: err?.error?.message || res.statusText };
+  }
+  return res.json();
+}
+
+// Next row ID in a sheet column (e.g. TXN-015, D006, S005)
+function nextId(rows, prefix, col=0) {
+  const nums = rows.slice(1).map(r => parseInt((r[col]||'').replace(/\D/g,''))||0);
+  const n = nums.length ? Math.max(...nums) + 1 : 1;
+  return prefix + String(n).padStart(3,'0');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LOAD ALL DATA FROM SHEETS
+// ══════════════════════════════════════════════════════════════════
+async function loadAllData() {
+  try {
+    setLoading(true);
+    const [fundRows, ledgerRows, donorRows, orgRows, schRows] = await Promise.all([
+      sheetsGet('Funds!A:H'),
+      sheetsGet('Ledger!A:O'),
+      sheetsGet('Donors!A:H').catch(()=>[]),
+      sheetsGet('Organizations!A:H').catch(()=>[]),
+      sheetsGet('Scholarships!A:K').catch(()=>[]),
+    ]);
+
+    // Parse funds (cols: 0=ID, 1=Name, 2=Type, 3=Purpose, 4=In, 5=Out, 6=Balance, 7=Status)
+    const funds = fundRows
+      .filter(r => r[0] && /^F\d+$/.test(r[0]) && r[7] !== 'Closed')
+      .map(r => ({
+        id:   r[0]||'',
+        name: r[1]||'',
+        type: r[2]||'',
+        in:   parseMoney(r[4]),
+        out:  parseMoney(r[5]),
+        bal:  parseMoney(r[6]),
+      }));
+
+    // Parse recent ledger (newest first, take 8)
+    const txns = ledgerRows
+      .filter(r => r[1] && r[2] && /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(r[1]))
+      .slice(-8).reverse()
+      .map(r => ({
+        date: r[1]||'', desc: r[2]||'', fund: r[3]||'',
+        in:   parseMoney(r[7]), out: parseMoney(r[8])
+      }));
+
+    // Parse donors
+    liveDonors = donorRows.filter(r=>r[0]&&/^D\d+$/.test(r[0])).map(r=>({
+      id: r[0], name: r[1]||'', initials: initials(r[1]),
+      ytd: parseMoney(r[4]), lastGift: r[5]||'—',
+      ackNeeded: (r[6]||'').toUpperCase()==='N',
+    }));
+
+    liveOrgs = orgRows.filter(r=>r[0]&&/^O\d+$/.test(r[0])).map(r=>({
+      id: r[0], name: r[1]||'', initials: initials(r[1]),
+      ytd: parseMoney(r[4]), lastGift: r[5]||'—', restricted: r[3]||'',
+    }));
+
+    // Parse scholarships
+    liveScholarships = schRows.filter(r=>r[0]&&/^S\d+$/.test(r[0])).map(r=>({
+      id: r[0], recipient: r[1]||'', fund: r[3]||'',
+      amount: parseMoney(r[4]), disbursed: parseMoney(r[9]||'0'),
+      type: r[5]||'one-time', year: r[6]||'2025', status: r[8]||'Pending',
+    }));
+
+    // Stash ledger rows for next-ID calc
+    window._ledgerRows = ledgerRows;
+    window._schRows    = schRows;
+    window._donorRows  = donorRows;
+
+    renderDashboard(funds.length ? funds : MOCK_FUNDS, txns.length ? txns : MOCK_TXN);
+    if (liveDonors.length)      renderDonors();
+    if (liveScholarships.length) renderScholarships();
+    renderAckLetters();
+
+    showToast('Live data loaded from Google Sheets ✓');
+    buildComboboxItems();
+  } catch(e) {
+    console.error('Sheets load error:', e);
+    const code = e?.result?.error?.code || e?.status || '';
+    const msg  = e?.result?.error?.message || e?.message || String(e);
+    showToast('Sheet error ' + (code||'') + ': ' + msg.slice(0,80), true);
+    renderDashboard(MOCK_FUNDS, MOCK_TXN);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function parseMoney(v) {
+  if (!v && v !== 0) return 0;
+  return parseFloat(String(v).replace(/[$,\s]/g,''))||0;
+}
+
+function initials(name='') {
+  return name.trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,2) || '?';
+}
+
+function setLoading(on) {
+  document.querySelectorAll('.stat-value').forEach(el => {
+    if (on) el.dataset.orig = el.textContent, el.textContent = '…';
+    else if (el.dataset.orig) el.textContent = el.dataset.orig;
+  });
+}
+
+// ── Live data containers (fall back to mock until loaded) ─────────
+let liveDonors       = null;   // null = not yet loaded from sheet
+let liveOrgs         = null;
+let liveScholarships = null;
+
+// ══════════════════════════════════════════════════════════════════
+// DASHBOARD RENDER
+// ══════════════════════════════════════════════════════════════════
+function renderDashboard(funds, txns) {
+  // Stat cards
+  const unrestr = funds.filter(f=>f.type==='Unrestricted').reduce((s,f)=>s+(f.bal||f.in-f.out),0);
+  const restr   = funds.filter(f=>f.type==='Restricted').reduce((s,f)=>s+(f.bal||f.in-f.out),0);
+  const ytdIn   = funds.reduce((s,f)=>s+f.in,0);
+
+  document.querySelector('#page-dashboard .stat-value.teal').textContent = '$'+fmt(unrestr);
+  document.querySelector('#page-dashboard .stat-value.gold').textContent = '$'+fmt(restr);
+  document.querySelectorAll('#page-dashboard .stat-value')[3].textContent = '$'+fmt(ytdIn);
+
+  // Fund bars
+  const maxBal = Math.max(...funds.map(f=>f.bal||f.in-f.out), 1);
+  const barHTML = funds.map(f => {
+    const bal = f.bal !== undefined ? f.bal : f.in - f.out;
+    const pct = Math.min(100, Math.round((bal/maxBal)*100));
+    const isRestr = f.type === 'Restricted';
+    return `
+    <div class="fund-row">
+      <div class="fund-row-top">
+        <div class="fund-name">${f.name}
+          <span class="badge${isRestr?'':' unres'}">${isRestr?'Restr.':'Unrestr.'}</span>
+        </div>
+        <div class="fund-amount">$${fmt(bal)}</div>
+      </div>
+      <div class="fund-bar-track">
+        <div class="fund-bar-fill${isRestr?'':' gold'}" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelector('.fund-list').innerHTML = barHTML;
+
+  // Recent transactions
+  const pillMap = { F001:'pill-gold',F002:'pill-teal',F003:'pill-purple',F004:'pill-teal',F005:'pill-gray',F006:'pill-gray' };
+  const txnHTML = txns.slice(0,6).map(t => `
+    <tr>
+      <td><div>${t.desc}</div><div style="font-size:11px;color:var(--ink3)">${t.date}</div></td>
+      <td><span class="pill ${pillMap[t.fund]||'pill-gray'}">${t.fund||'—'}</span></td>
+      <td class="${t.in>0?'amt-in':'amt-out'}" style="text-align:right">
+        ${t.in>0 ? '+$'+fmt(t.in) : '−$'+fmt(t.out)}
+      </td>
+    </tr>`).join('');
+  document.querySelector('.txn-table tbody').innerHTML = txnHTML ||
+    '<tr><td colspan="3" style="text-align:center;color:var(--ink3);padding:20px;">No transactions yet</td></tr>';
+
+  // Ack alert — count donors needing letters
+  const ackCount = (liveDonors||[]).filter(d=>d.ackNeeded).length;
+  const alertEl  = document.querySelector('.alert-strip');
+  if (ackCount > 0) {
+    alertEl.style.display = 'flex';
+    alertEl.querySelector('strong').textContent = ackCount + (ackCount===1?' donation':' donations');
+  } else {
+    alertEl.style.display = isSignedIn ? 'none' : 'flex';
+  }
+}
+
+function fmt(n) { return Math.round(n).toLocaleString(); }
+
+// ══════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════════
+const pageLabels = {
+  'dashboard':'Dashboard','log-transaction':'Log Transaction',
+  'donors':'Donors','scholarships':'Scholarships','ack-letters':'Ack. Letters'
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes("'"+id+"'")) n.classList.add('active');
+  });
+  document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('mnav-'+id)?.classList.add('active');
+  const lbl = document.getElementById('mobile-page-label');
+  if (lbl) lbl.textContent = pageLabels[id]||'';
+  document.querySelector('.main').scrollTop = 0;
+  if (id === 'donors') renderDonors();
+  if (id === 'scholarships') renderScholarships();
+  if (id === 'ack-letters') renderAckLetters();
+}
+
+// ── DATE ──────────────────────────────────────────────────────────
+document.getElementById('dash-date').textContent =
+  new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('txn-date').value = today;
+
+// ══════════════════════════════════════════════════════════════════
+// LOG TRANSACTION — writes to Ledger sheet
+// ══════════════════════════════════════════════════════════════════
+let txnType = 'income';
+
+function setTxnType(type) {
+  txnType = type;
+  document.getElementById('toggle-income').classList.toggle('active',  type==='income');
+  document.getElementById('toggle-expense').classList.toggle('active', type==='expense');
+  document.getElementById('txn-form-title').textContent =
+    type==='income' ? 'Recording income' : 'Recording expense / disbursement';
+  document.getElementById('donor-field').querySelector('label').textContent =
+    type==='income' ? 'Donor ID' : 'Payee ID';
+}
+
+function toggleRestricted() {
+  document.getElementById('purpose-field').style.display =
+    document.getElementById('txn-restricted').value==='Y' ? 'flex' : 'none';
+}
+
+document.getElementById('txn-amount').addEventListener('input', function() {
+  document.getElementById('ack-reminder').style.display =
+    (txnType==='income' && parseFloat(this.value)>=250) ? 'inline' : 'none';
+});
+
+async function submitTransaction() {
+  const date   = document.getElementById('txn-date').value;
+  const amount = document.getElementById('txn-amount').value;
+  const desc   = document.getElementById('txn-desc').value;
+  const fund   = document.getElementById('txn-fund').value;
+  if (!date||!amount||!desc||!fund) { showToast('Fill in all required fields.',true); return; }
+
+  const cat    = document.getElementById('txn-category').value;
+  const method = document.getElementById('txn-method').value;
+  const donor  = document.getElementById('txn-donor').value;
+  const restr  = document.getElementById('txn-restricted').value;
+  const purp   = document.getElementById('txn-purpose').value;
+  const ref    = document.getElementById('txn-ref').value;
+  const notes  = document.getElementById('txn-notes').value;
+  const amtIn  = txnType==='income'  ? amount : '';
+  const amtOut = txnType==='expense' ? amount : '';
+
+  // Auto-generate TXN ID
+  const rows   = window._ledgerRows || [];
+  const txnId  = nextId(rows, 'TXN-', 0);
+
+  const row = [txnId, date, desc, fund, cat, method, donor, amtIn, amtOut, '', '', restr, purp, ref, notes];
+
+  if (isSignedIn) {
+    try {
+      const btn = document.querySelector('#page-log-transaction .btn-teal');
+      btn.textContent = 'Saving…'; btn.disabled = true;
+      await sheetsAppend('Ledger!A:O', [row]);
+      if (window._ledgerRows) window._ledgerRows.push(row);
+      btn.textContent = 'Save transaction'; btn.disabled = false;
+      showToast('Saved to ledger ✓ — refreshing data…');
+      clearForm();
+      await loadAllData();
+    } catch(e) {
+      console.error(e);
+      showToast('Write failed — check permissions', true);
+      document.querySelector('#page-log-transaction .btn-teal').textContent = 'Save transaction';
+      document.querySelector('#page-log-transaction .btn-teal').disabled = false;
+    }
+  } else {
+    // Not signed in — show sign-in prompt
+    showToast('Please sign in with Google to save transactions.', true);
+  }
+}
+
+function clearForm() {
+  ['txn-date','txn-amount','txn-desc','txn-fund','txn-category',
+   'txn-method','txn-donor','txn-ref','txn-notes','txn-purpose'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.tagName==='SELECT') el.selectedIndex=0;
+    else if (el) el.value='';
+  });
+  document.getElementById('txn-date').value = today;
+  document.getElementById('purpose-field').style.display = 'none';
+  document.getElementById('ack-reminder').style.display  = 'none';
+  // Clear donor combobox display
+  const dd = document.getElementById('txn-donor-display');
+  if (dd) { dd.value = ''; dd.classList.remove('has-value'); }
+  comboboxState.donor.selected = null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DONORS
+// ══════════════════════════════════════════════════════════════════
+const MOCK_DONORS = [
+  { id:'D001', name:'Jane Smith',    initials:'JS', ytd:500,  lastGift:'Apr 5',  ackNeeded:false },
+  { id:'D002', name:'Anonymous',     initials:'AN', ytd:75,   lastGift:'Apr 12', ackNeeded:false },
+  { id:'D003', name:'John Doe',      initials:'JD', ytd:250,  lastGift:'Apr 20', ackNeeded:true  },
+  { id:'D004', name:'Maria Lopez',   initials:'ML', ytd:200,  lastGift:'May 5',  ackNeeded:false },
+  { id:'D005', name:'Robert Nguyen', initials:'RN', ytd:1200, lastGift:'Mar 15', ackNeeded:true  },
+];
+const MOCK_ORGS = [
+  { id:'O001', name:'First Baptist Church', initials:'FB', ytd:1000, lastGift:'Apr 10', restricted:'Music scholarships' },
+  { id:'O002', name:'Smith Foundation',     initials:'SF', ytd:5000, lastGift:'Apr 22', restricted:'General scholarships' },
+];
+
+function renderDonors(filter) {
+  const donors = liveDonors || MOCK_DONORS;
+  const orgs   = liveOrgs   || MOCK_ORGS;
+
+  const fd = filter
+    ? donors.filter(d=>d.name.toLowerCase().includes(filter.toLowerCase())||d.id.toLowerCase().includes(filter.toLowerCase()))
+    : donors;
+
+  document.getElementById('donor-list').innerHTML = fd.map(d=>`
+    <div class="record-row">
+      <div class="record-avatar">${d.initials}</div>
+      <div class="record-info">
+        <div class="record-name">${d.name} <span style="font-size:11px;color:var(--ink3);font-weight:400">${d.id}</span></div>
+        <div class="record-meta">Last gift: ${d.lastGift}</div>
+        ${d.ackNeeded?'<div class="ack-needed"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="5" r="4"/><line x1="5" y1="3" x2="5" y2="5.5"/><circle cx="5" cy="7" r="0.4" fill="currentColor"/></svg> Ack. letter needed</div>':''}
+      </div>
+      <div class="record-right">
+        <div class="record-amount">$${d.ytd.toLocaleString()}</div>
+        <div class="record-date">YTD giving</div>
+      </div>
+    </div>`).join('') || '<div style="padding:20px;color:var(--ink3);text-align:center;">No donors found</div>';
+
+  document.getElementById('org-list').innerHTML = orgs.map(o=>`
+    <div class="record-row">
+      <div class="record-avatar org">${o.initials}</div>
+      <div class="record-info">
+        <div class="record-name">${o.name} <span style="font-size:11px;color:var(--ink3);font-weight:400">${o.id}</span></div>
+        <div class="record-meta">Restricted: ${o.restricted||'—'} · Last gift: ${o.lastGift}</div>
+      </div>
+      <div class="record-right">
+        <div class="record-amount">$${o.ytd.toLocaleString()}</div>
+        <div class="record-date">YTD giving</div>
+      </div>
+    </div>`).join('');
+
+  document.querySelector('#page-donors .pill-gray').textContent = fd.length+' donors';
+}
+
+function filterDonors(val) { renderDonors(val); }
+
+// ══════════════════════════════════════════════════════════════════
+// SCHOLARSHIPS — writes to Scholarships sheet
+// ══════════════════════════════════════════════════════════════════
+const MOCK_SCH = [
+  { id:'S001', recipient:'Rachel Chen',  fund:'F002', amount:800,  disbursed:800,  type:'one-time',  year:2025, status:'Disbursed' },
+  { id:'S002', recipient:'Marcus Webb',  fund:'F003', amount:1000, disbursed:500,  type:'multi-year',year:2025, status:'Partial'   },
+  { id:'S003', recipient:'Aisha Okafor', fund:'F002', amount:800,  disbursed:300,  type:'one-time',  year:2025, status:'Partial'   },
+  { id:'S004', recipient:'Tyler Reyes',  fund:'F003', amount:600,  disbursed:0,    type:'one-time',  year:2025, status:'Pending'   },
+];
+
+function renderScholarships() {
+  const schs = liveScholarships || MOCK_SCH;
+  const fundNames = { F002:'Scholarship general', F003:'Music scholarship' };
+  const statusPill = { Disbursed:'pill-teal', Partial:'pill-gold', Pending:'pill-gray' };
+
+  document.getElementById('scholarship-list').innerHTML = schs.map(s=>{
+    const pct = s.amount>0 ? Math.round((s.disbursed/s.amount)*100) : 0;
+    return `
+    <div class="record-row">
+      <div class="record-avatar" style="background:var(--purple-lt);color:var(--purple)">${s.recipient.split(' ').map(w=>w[0]).join('')}</div>
+      <div class="record-info">
+        <div class="record-name">${s.recipient}
+          <span style="font-size:10.5px;color:var(--ink3);margin-left:4px">${s.id}</span>
+          ${s.type==='multi-year'?'<span class="pill pill-purple" style="font-size:10px;margin-left:4px">Multi-year</span>':''}
+        </div>
+        <div class="record-meta">${fundNames[s.fund]||s.fund} · ${s.year}</div>
+        <div class="sch-progress" style="margin-top:6px">
+          <div class="sch-bar-track"><div class="sch-bar-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:11px;color:var(--ink3);white-space:nowrap">$${s.disbursed.toLocaleString()} of $${s.amount.toLocaleString()} paid</span>
+        </div>
+      </div>
+      <div class="record-right">
+        <span class="pill ${statusPill[s.status]||'pill-gray'}">${s.status}</span>
+        ${s.disbursed<s.amount?`<div style="margin-top:6px"><button class="btn btn-ghost btn-sm" onclick="logDisbursement('${s.id}','${s.recipient}')">Log payment</button></div>`:''}
+      </div>
+    </div>`;
+  }).join('') || '<div style="padding:20px;color:var(--ink3);text-align:center">No awards yet</div>';
+
+  document.querySelector('#page-scholarships .pill-purple').textContent = schs.length+' awards';
+}
+
+function toggleNewScholarship() {
+  const c = document.getElementById('sch-form-card');
+  c.style.display = c.style.display==='none' ? 'block' : 'none';
+}
+
+function toggleMultiYear() {
+  document.getElementById('multiyear-block').classList.toggle('visible',
+    document.getElementById('sch-type').value==='multi-year');
+}
+
+async function submitScholarship() {
+  // Use combobox-linked donor, or fall back to manual entry
+  const name    = document.getElementById('sch-name').value ||
+                  document.getElementById('sch-name-manual').value;
+  const contact = document.getElementById('sch-contact').value ||
+                  document.getElementById('sch-contact-manual').value;
+  const amount  = document.getElementById('sch-amount').value;
+  const fund    = document.getElementById('sch-fund').value;
+  const type    = document.getElementById('sch-type').value;
+  const year    = document.getElementById('sch-year').value;
+  const notes   = document.getElementById('sch-notes').value;
+  if (!name||!amount||!fund) { showToast('Fill in required fields.',true); return; }
+
+  const rows  = window._schRows || [];
+  const schId = nextId(rows, 'S', 0);
+  const row   = [schId, name, contact, fund, amount, type, year, notes, 'Pending', '0', new Date().toLocaleDateString()];
+
+  if (isSignedIn) {
+    try {
+      const btn = document.querySelector('#sch-form-card .btn-teal');
+      btn.textContent='Creating…'; btn.disabled=true;
+      await sheetsAppend('Scholarships!A:K', [row]);
+      if (window._schRows) window._schRows.push(row);
+      btn.textContent='Create award'; btn.disabled=false;
+      showToast('Scholarship created ✓');
+      toggleNewScholarship();
+      await loadAllData();
+    } catch(e) {
+      console.error(e);
+      showToast('Write failed — check permissions',true);
+    }
+  } else {
+    showToast('Please sign in to save scholarships.',true);
+  }
+}
+
+function logDisbursement(schId, recipient) {
+  showPage('log-transaction');
+  setTxnType('expense');
+  document.getElementById('txn-desc').value     = 'Scholarship disbursement — '+recipient;
+  document.getElementById('txn-category').value = 'Scholarship disbursement';
+  document.getElementById('txn-restricted').value = 'Y';
+  document.getElementById('purpose-field').style.display = 'flex';
+  document.getElementById('txn-purpose').value  = 'Award '+schId;
+  showToast('Form pre-filled — add amount and submit.');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.style.background = isError ? 'var(--coral)' : 'var(--ink)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3400);
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// SEARCHABLE COMBOBOX ENGINE
+// ══════════════════════════════════════════════════════════════════
+// Registry: each combobox has an id, items[], and selected value
+const comboboxState = {
+  donor: { items: [], selected: null, focusIdx: -1 },
+  sch:   { items: [], selected: null, focusIdx: -1 },
+};
+
+// Build items from live data whenever it's available
+function buildComboboxItems() {
+  const donors = liveDonors || MOCK_DONORS;
+  const orgs   = liveOrgs   || MOCK_ORGS;
+  const schs   = liveScholarships || MOCK_SCH;
+
+  comboboxState.donor.items = [
+    ...donors.map(d => ({
+      id: d.id, label: `${d.id} — ${d.name}`,
+      name: d.name, meta: `Last gift: ${d.lastGift}`,
+      badgeClass: 'donor', value: d.id,
+    })),
+    ...orgs.map(o => ({
+      id: o.id, label: `${o.id} — ${o.name}`,
+      name: o.name, meta: o.restricted || '',
+      badgeClass: 'org', value: o.id,
+    })),
+  ];
+
+  comboboxState.sch.items = [
+    ...donors.map(d => ({
+      id: d.id, label: `${d.id} — ${d.name}`,
+      name: d.name, meta: `Last gift: ${d.lastGift}`,
+      badgeClass: 'donor', value: d.id,
+      contact: '',
+    })),
+  ];
+}
+
+function openCombobox(key) {
+  buildComboboxItems();
+  // Close any other open dropdowns
+  Object.keys(comboboxState).forEach(k => {
+    if (k !== key) document.getElementById(k+'-dropdown')?.classList.remove('open');
+  });
+
+  const dd = document.getElementById(key+'-dropdown');
+  dd.classList.add('open');
+  renderComboboxList(key, '');
+  setTimeout(() => document.getElementById(key+'-search')?.focus(), 50);
+}
+
+function closeCombobox(key) {
+  document.getElementById(key+'-dropdown')?.classList.remove('open');
+}
+
+function renderComboboxList(key, query) {
+  const state = comboboxState[key];
+  const listEl = document.getElementById(key+'-list-drop');
+  const q = query.toLowerCase().trim();
+
+  const filtered = q
+    ? state.items.filter(it =>
+        it.name.toLowerCase().includes(q) ||
+        it.id.toLowerCase().includes(q) ||
+        (it.meta||'').toLowerCase().includes(q))
+    : state.items;
+
+  state.focusIdx = -1;
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="combobox-empty">No matches — use manual entry below</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.map((it, i) => `
+    <button class="combobox-option${state.selected?.id === it.id ? ' selected' : ''}"
+            data-idx="${i}" data-key="${key}"
+            onclick="selectCombobox('${key}', ${JSON.stringify(it).replace(/'/g, "\'")})"
+            onmouseenter="focusOption('${key}', ${i})">
+      <span class="combobox-badge ${it.badgeClass}">${it.id}</span>
+      <span class="combobox-name">${it.name}</span>
+      ${it.meta ? `<span class="combobox-meta">${it.meta}</span>` : ''}
+    </button>`).join('');
+}
+
+function filterCombobox(key, query) {
+  renderComboboxList(key, query);
+}
+
+function selectCombobox(key, item) {
+  comboboxState[key].selected = item;
+
+  if (key === 'donor') {
+    document.getElementById('txn-donor').value         = item.value;
+    document.getElementById('txn-donor-display').value = item.label;
+    document.getElementById('txn-donor-display').classList.add('has-value');
+  } else if (key === 'sch') {
+    document.getElementById('sch-name').value         = item.name;
+    document.getElementById('sch-contact').value      = item.contact || '';
+    document.getElementById('sch-name-display').value = item.label;
+    document.getElementById('sch-name-display').classList.add('has-value');
+    // Pre-fill manual fields too (editable)
+    document.getElementById('sch-name-manual').value    = item.name;
+    document.getElementById('sch-contact-manual').value = item.contact || '';
+  }
+
+  closeCombobox(key);
+}
+
+function clearCombobox(key) {
+  comboboxState[key].selected = null;
+  if (key === 'donor') {
+    document.getElementById('txn-donor').value = '';
+    document.getElementById('txn-donor-display').value = '';
+    document.getElementById('txn-donor-display').classList.remove('has-value');
+  } else if (key === 'sch') {
+    document.getElementById('sch-name').value = '';
+    document.getElementById('sch-contact').value = '';
+    document.getElementById('sch-name-display').value = '';
+    document.getElementById('sch-name-display').classList.remove('has-value');
+    document.getElementById('sch-name-manual').value = '';
+    document.getElementById('sch-contact-manual').value = '';
+  }
+  closeCombobox(key);
+}
+
+function focusOption(key, idx) {
+  comboboxState[key].focusIdx = idx;
+  document.querySelectorAll(`#${key}-list-drop .combobox-option`)
+    .forEach((el, i) => el.classList.toggle('focused', i === idx));
+}
+
+function comboboxKey(e, key) {
+  const state = comboboxState[key];
+  const opts  = document.querySelectorAll(`#${key}-list-drop .combobox-option`);
+  if (e.key === 'ArrowDown') {
+    state.focusIdx = Math.min(state.focusIdx + 1, opts.length - 1);
+    opts[state.focusIdx]?.focus();
+    e.preventDefault();
+  } else if (e.key === 'ArrowUp') {
+    state.focusIdx = Math.max(state.focusIdx - 1, 0);
+    opts[state.focusIdx]?.focus();
+    e.preventDefault();
+  } else if (e.key === 'Escape') {
+    closeCombobox(key);
+  }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', e => {
+  Object.keys(comboboxState).forEach(key => {
+    const wrap = document.getElementById(key+'-combobox-wrap') ||
+                 document.getElementById(key === 'donor' ? 'donor-combobox-wrap' : 'sch-combobox-wrap');
+    if (wrap && !wrap.contains(e.target)) closeCombobox(key);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════
+// ACK LETTERS
+// ══════════════════════════════════════════════════════════════════
+
+// Track which donor/org is currently open in the modal
+let _currentAckDonor = null;
+
+function renderAckLetters() {
+  const donors = liveDonors || MOCK_DONORS;
+  const orgs   = liveOrgs   || MOCK_ORGS;
+
+  // Individuals needing ack
+  const needsAck = donors.filter(d => d.ackNeeded);
+  const needsEl  = document.getElementById('ack-needs-list');
+  const countEl  = document.getElementById('ack-needs-count');
+
+  countEl.textContent = needsAck.length + ' pending';
+
+  if (!needsAck.length) {
+    needsEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px;">No individual donors need letters right now.</div>';
+  } else {
+    needsEl.innerHTML = needsAck.map(d => `
+      <div class="ack-queue-row">
+        <div class="record-avatar">${d.initials}</div>
+        <div class="record-info" style="flex:1">
+          <div class="record-name">${d.name} <span style="font-size:11px;color:var(--ink3);font-weight:400">${d.id}</span></div>
+          <div class="record-meta">YTD: $${d.ytd.toLocaleString()} · Last gift: ${d.lastGift}</div>
+        </div>
+        <span class="ack-type-pill ${d.ytd >= 250 ? 'ack-type-formal' : 'ack-type-minimal'}">
+          ${d.ytd >= 250 ? 'Formal letter' : 'Simple receipt'}
+        </span>
+        <div class="ack-amount-badge">$${d.ytd.toLocaleString()}</div>
+        <button class="btn btn-ghost btn-sm" onclick="openLetterModal(${JSON.stringify(d).replace(/"/g,"'")}, 'donor')">Preview</button>
+      </div>`).join('');
+  }
+
+  // Orgs — show all (no ackNeeded flag on orgs yet, show all with YTD > 0)
+  const orgNeedsAck = orgs.filter(o => o.ytd > 0);
+  const orgEl       = document.getElementById('ack-org-list');
+  const orgCountEl  = document.getElementById('ack-org-count');
+
+  orgCountEl.textContent = orgNeedsAck.length + ' pending';
+
+  if (!orgNeedsAck.length) {
+    orgEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px;">No organization letters needed.</div>';
+  } else {
+    orgEl.innerHTML = orgNeedsAck.map(o => `
+      <div class="ack-queue-row">
+        <div class="record-avatar org">${o.initials}</div>
+        <div class="record-info" style="flex:1">
+          <div class="record-name">${o.name} <span style="font-size:11px;color:var(--ink3);font-weight:400">${o.id}</span></div>
+          <div class="record-meta">Restricted: ${o.restricted||'—'} · Last gift: ${o.lastGift}</div>
+        </div>
+        <span class="ack-type-pill ack-type-formal">Formal letter</span>
+        <div class="ack-amount-badge">$${o.ytd.toLocaleString()}</div>
+        <button class="btn btn-ghost btn-sm" onclick="openLetterModal(${JSON.stringify(o).replace(/"/g,"'")}, 'org')">Preview</button>
+      </div>`).join('');
+  }
+
+  // Green "all done" banner if nothing pending
+  const allDoneEl = document.getElementById('ack-all-done');
+  allDoneEl.style.display = (needsAck.length === 0 && orgNeedsAck.length === 0) ? 'flex' : 'none';
+}
+
+function openLetterModal(donor, type) {
+  _currentAckDonor = { donor, type };
+  const isFormal = donor.ytd >= 250 || type === 'org';
+  const modal = document.getElementById('letter-modal-bg');
+  document.getElementById('letter-modal-title').textContent =
+    isFormal ? 'Formal Acknowledgment Letter — ' + donor.name
+             : 'Donation Receipt — ' + donor.name;
+  document.getElementById('letter-preview-content').innerHTML =
+    isFormal ? buildFormalLetter(donor) : buildMinimalReceipt(donor);
+  modal.classList.add('open');
+}
+
+function closeLetterModal(e) {
+  if (e && e.target !== document.getElementById('letter-modal-bg') && e.type !== 'click') return;
+  document.getElementById('letter-modal-bg').classList.remove('open');
+  _currentAckDonor = null;
+}
+
+function printLetter() {
+  window.print();
+}
+
+function markAckSent() {
+  if (!_currentAckDonor) return;
+  const name = _currentAckDonor.donor.name;
+  // Optimistically update in-memory ack flag
+  if (_currentAckDonor.type === 'donor') {
+    const d = (liveDonors || MOCK_DONORS).find(x => x.id === _currentAckDonor.donor.id);
+    if (d) d.ackNeeded = false;
+  }
+  document.getElementById('letter-modal-bg').classList.remove('open');
+  _currentAckDonor = null;
+  showToast('Marked as sent for ' + name + ' ✓');
+  renderAckLetters();
+  // Re-count for dashboard alert strip
+  const ackCount = (liveDonors || MOCK_DONORS).filter(d=>d.ackNeeded).length;
+  const alertEl = document.querySelector('.alert-strip');
+  if (ackCount === 0 && isSignedIn) alertEl.style.display = 'none';
+}
+
+function buildFormalLetter(donor) {
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const isSingle = donor.ytd >= 250;
+  return `
+    <div class="letter-header-block">
+      <div class="letter-org-name">Venite.org</div>
+      <div class="letter-org-meta">A 501(c)(3) nonprofit organization · EIN: 00-0000000<br>
+        123 Main Street, Minneapolis, MN 55401 · (612) 000-0000 · admin@venite.org</div>
+      <hr class="letter-divider">
+    </div>
+    <div class="letter-date">${today}</div>
+    <div style="margin-bottom:20px;">
+      <div style="font-weight:600;">${donor.name}</div>
+    </div>
+    <div class="letter-salutation">Dear ${donor.name.split(' ')[0]},</div>
+    <div class="letter-body">
+      <p>On behalf of Venite.org, we want to express our sincere gratitude for your generous support.
+      Your contribution makes our mission possible, and we are deeply thankful for your partnership.</p>
+      <p>This letter serves as your official written acknowledgment for tax purposes, as required by the IRS
+      for charitable contributions of $250 or more.</p>
+    </div>
+    <div class="letter-irs-box">
+      <strong>Official Tax Acknowledgment</strong><br><br>
+      Donor: <strong>${donor.name}</strong><br>
+      Total gifts acknowledged (year-to-date): <strong>$${donor.ytd.toLocaleString()}</strong><br>
+      Date of most recent gift: <strong>${donor.lastGift || '—'}</strong><br><br>
+      <em>No goods or services were provided in exchange for this contribution.
+      Venite.org is a 501(c)(3) organization; your donation may be tax-deductible
+      to the extent permitted by law. Please consult your tax advisor.</em>
+    </div>
+    <div class="letter-body">
+      <p>Thank you again for your faithfulness and generosity. We are honored to have you as a partner in this work.</p>
+    </div>
+    <div class="letter-closing">
+      <p>With gratitude,</p>
+      <div class="letter-sig-line">Executive Director, Venite.org</div>
+    </div>`;
+}
+
+function buildMinimalReceipt(donor) {
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  return `
+    <div class="letter-header-block">
+      <div class="letter-org-name">Venite.org</div>
+      <div class="letter-org-meta">501(c)(3) · EIN: 00-0000000 · admin@venite.org</div>
+      <hr class="letter-divider">
+    </div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:16px;">Donation Receipt</div>
+    <div class="letter-receipt-box">
+      <div class="letter-receipt-row">
+        <span class="letter-receipt-label">Donor</span>
+        <span class="letter-receipt-value">${donor.name}</span>
+      </div>
+      <div class="letter-receipt-row">
+        <span class="letter-receipt-label">Amount</span>
+        <span class="letter-receipt-value">$${donor.ytd.toLocaleString()}</span>
+      </div>
+      <div class="letter-receipt-row">
+        <span class="letter-receipt-label">Date</span>
+        <span class="letter-receipt-value">${donor.lastGift || today}</span>
+      </div>
+      <div class="letter-receipt-row">
+        <span class="letter-receipt-label">Organization</span>
+        <span class="letter-receipt-value">Venite.org</span>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#555;margin-top:16px;font-family:Arial,sans-serif;">
+      No goods or services were provided in exchange for this contribution.
+      Venite.org is a 501(c)(3) nonprofit. This receipt is for your records.
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT — render mock data immediately, wire API after libs load
+// ══════════════════════════════════════════════════════════════════
+renderDashboard(MOCK_FUNDS, MOCK_TXN);
+renderDonors();
+renderScholarships();
+
+
+</script>
+</body>
+</html>
