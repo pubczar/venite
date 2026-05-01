@@ -988,6 +988,94 @@
     .letter-preview { padding: 0; }
   }
 
+  /* ── DONOR DRAWER ── */
+  .drawer-scrim {
+    position: fixed; inset: 0;
+    background: rgba(26,24,22,0.45);
+    z-index: 400;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .drawer-scrim.open { opacity: 1; pointer-events: all; }
+
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 480px; max-width: 100vw;
+    background: #fff;
+    z-index: 401;
+    display: flex; flex-direction: column;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.14);
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+  }
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 28px 18px;
+    border-bottom: 1px solid var(--paper2);
+    flex-shrink: 0;
+  }
+  .drawer-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px; color: var(--ink); letter-spacing: -0.02em;
+  }
+  .drawer-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: none; background: var(--paper2); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--ink2); line-height: 1;
+    transition: background 0.15s;
+  }
+  .drawer-close:hover { background: var(--paper3); }
+
+  .drawer-body {
+    flex: 1; overflow-y: auto;
+    padding: 28px;
+  }
+
+  .drawer-section-label {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink3);
+    margin: 20px 0 12px;
+  }
+  .drawer-section-label:first-child { margin-top: 0; }
+
+  .drawer-footer {
+    padding: 16px 28px;
+    border-top: 1px solid var(--paper2);
+    display: flex; gap: 10px; align-items: center;
+    flex-shrink: 0; background: var(--paper);
+  }
+
+  .drawer-type-toggle {
+    display: flex; background: var(--paper2);
+    border-radius: 8px; padding: 3px; gap: 2px;
+    margin-bottom: 24px;
+  }
+  .drawer-type-btn {
+    flex: 1; padding: 8px 12px; border-radius: 6px;
+    border: none; background: none;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 400; color: var(--ink3); cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .drawer-type-btn.active {
+    background: #fff; color: var(--ink); font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .record-row .row-edit-btn {
+    opacity: 0; transition: opacity 0.15s;
+    margin-left: 8px;
+  }
+  .record-row:hover .row-edit-btn { opacity: 1; }
+
+  @media (max-width: 680px) {
+    .drawer { width: 100vw; }
+    .record-row .row-edit-btn { opacity: 1; }
+  }
+
 </style>
 </head>
 <body>
@@ -1396,19 +1484,24 @@
   <!-- ── DONORS ──────────────────────────────────────────────── -->
   <div id="page-donors" class="page">
     <div class="page-header">
-      <div class="page-title">Donors</div>
-      <div class="page-subtitle">Individuals and organizations — giving history and acknowledgment status.</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+        <div>
+          <div class="page-title">Donors</div>
+          <div class="page-subtitle">Individuals and organizations — giving history and acknowledgment status.</div>
+        </div>
+        <button class="btn btn-teal" style="flex-shrink:0;margin-top:4px" onclick="openDonorDrawer('new','donor')">+ New donor</button>
+      </div>
     </div>
 
     <div class="filter-bar">
       <input class="search-input" type="text" placeholder="Search donors by name or ID…" oninput="filterDonors(this.value)">
-      <button class="btn btn-teal btn-sm" onclick="showPage('log-transaction')">+ Log donation</button>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('log-transaction')">+ Log donation</button>
     </div>
 
     <div class="card" style="margin-bottom:16px;">
       <div class="card-header">
         <span class="card-title">Individuals</span>
-        <span class="pill pill-gray">5 donors</span>
+        <span class="pill pill-gray" id="donor-count-pill">0 donors</span>
       </div>
       <div class="card-body" style="padding:8px 8px;">
         <div class="record-list" id="donor-list">
@@ -1420,7 +1513,8 @@
     <div class="card">
       <div class="card-header">
         <span class="card-title">Organizations &amp; grantors</span>
-        <span class="pill pill-gray">2 orgs</span>
+        <span class="pill pill-gray" id="org-count-pill">0 orgs</span>
+        <button class="btn btn-ghost btn-sm" onclick="openDonorDrawer('new','org')" style="margin-left:auto;">+ New org</button>
       </div>
       <div class="card-body" style="padding:8px 8px;">
         <div class="record-list" id="org-list"></div>
@@ -1572,6 +1666,87 @@
           <div style="padding:20px;text-align:center;color:var(--ink3);font-size:13px;">Loading…</div>
         </div>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ── DONOR / ORG DRAWER ────────────────────────────────────── -->
+  <div class="drawer-scrim" id="drawer-scrim" onclick="closeDonorDrawer()"></div>
+  <div class="drawer" id="donor-drawer">
+    <div class="drawer-header">
+      <span class="drawer-title" id="drawer-title">New Donor</span>
+      <button class="drawer-close" onclick="closeDonorDrawer()">✕</button>
+    </div>
+    <div class="drawer-body">
+
+      <!-- Type toggle (only shown on new) -->
+      <div class="drawer-type-toggle" id="drawer-type-row">
+        <button class="drawer-type-btn active" id="dtype-donor" onclick="setDrawerType('donor')">Individual donor</button>
+        <button class="drawer-type-btn" id="dtype-org" onclick="setDrawerType('org')">Organization / grantor</button>
+      </div>
+
+      <div class="form-grid">
+        <!-- Shared fields -->
+        <div class="field form-span2">
+          <label id="drawer-name-label">Full name <span class="required">*</span></label>
+          <input type="text" id="dr-name" placeholder="e.g. Jane Smith">
+        </div>
+
+        <div class="field" id="dr-email-field">
+          <label>Email</label>
+          <input type="email" id="dr-email" placeholder="jane@example.com">
+        </div>
+        <div class="field" id="dr-phone-field">
+          <label>Phone</label>
+          <input type="tel" id="dr-phone" placeholder="(612) 555-0100">
+        </div>
+
+        <!-- Org-only field -->
+        <div class="field form-span2" id="dr-restricted-field" style="display:none">
+          <label>Restricted purpose (if any)</label>
+          <input type="text" id="dr-restricted" placeholder="e.g. Music scholarships only">
+        </div>
+
+        <div class="field form-span2">
+          <label>Notes</label>
+          <textarea id="dr-notes" placeholder="Board connection, giving history, preferences…" style="min-height:72px"></textarea>
+        </div>
+      </div>
+
+      <div class="drawer-section-label">Giving record</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>YTD giving ($)</label>
+          <input type="number" id="dr-ytd" placeholder="0.00" step="0.01" min="0">
+          <span class="hint">Calculated automatically from logged transactions — update manually only to correct.</span>
+        </div>
+        <div class="field">
+          <label>Last gift date</label>
+          <input type="text" id="dr-lastgift" placeholder="e.g. Apr 22">
+        </div>
+        <div class="field form-span2">
+          <label>Ack. letter status</label>
+          <select id="dr-ack">
+            <option value="Y">Sent — acknowledgment on file</option>
+            <option value="N">Needed — not yet sent</option>
+            <option value="">N/A</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Edit-mode only: danger zone -->
+      <div id="drawer-danger-zone" style="display:none;margin-top:28px;">
+        <div class="drawer-section-label" style="color:var(--coral)">Danger zone</div>
+        <button class="btn btn-ghost btn-sm" style="color:var(--coral);border:1px solid var(--coral-lt)" onclick="confirmDeleteDonor()">
+          Delete this record…
+        </button>
+      </div>
+
+    </div><!-- /drawer-body -->
+    <div class="drawer-footer">
+      <button class="btn btn-teal" id="drawer-save-btn" onclick="saveDonorDrawer()">Save donor</button>
+      <button class="btn btn-ghost" onclick="closeDonorDrawer()">Cancel</button>
+      <span id="drawer-saving-indicator" style="display:none;font-size:12px;color:var(--ink3);margin-left:4px;">Saving…</span>
     </div>
   </div>
 
@@ -1862,16 +2037,22 @@ async function loadAllData() {
         in:   parseMoney(r[7]), out: parseMoney(r[8])
       }));
 
-    // Parse donors
+    // Parse donors (cols: A=ID, B=Name, C=Email, D=Phone, E=YTD, F=LastGift, G=AckSent, H=Notes)
     liveDonors = donorRows.filter(r=>r[0]&&/^D\d+$/.test(r[0])).map(r=>({
       id: r[0], name: r[1]||'', initials: initials(r[1]),
+      email: r[2]||'', phone: r[3]||'',
       ytd: parseMoney(r[4]), lastGift: r[5]||'—',
       ackNeeded: (r[6]||'').toUpperCase()==='N',
+      notes: r[7]||'',
     }));
 
+    // Parse orgs (cols: A=ID, B=Name, C=Contact, D=RestrictedPurpose, E=YTD, F=LastGift, G=AckSent, H=Notes)
     liveOrgs = orgRows.filter(r=>r[0]&&/^O\d+$/.test(r[0])).map(r=>({
       id: r[0], name: r[1]||'', initials: initials(r[1]),
-      ytd: parseMoney(r[4]), lastGift: r[5]||'—', restricted: r[3]||'',
+      contact: r[2]||'', restricted: r[3]||'',
+      ytd: parseMoney(r[4]), lastGift: r[5]||'—',
+      ackNeeded: (r[6]||'').toUpperCase()==='N',
+      notes: r[7]||'',
     }));
 
     // Parse scholarships
@@ -2150,34 +2331,51 @@ function renderDonors(filter) {
     ? donors.filter(d=>d.name.toLowerCase().includes(filter.toLowerCase())||d.id.toLowerCase().includes(filter.toLowerCase()))
     : donors;
 
-  document.getElementById('donor-list').innerHTML = fd.map(d=>`
+  document.getElementById('donor-list').innerHTML = fd.map((d,i)=>`
     <div class="record-row">
       <div class="record-avatar">${d.initials}</div>
       <div class="record-info">
         <div class="record-name">${d.name} <span style="font-size:11px;color:var(--ink3);font-weight:400">${d.id}</span></div>
-        <div class="record-meta">Last gift: ${d.lastGift}</div>
+        <div class="record-meta">Last gift: ${d.lastGift}${d.email?' · '+d.email:''}</div>
         ${d.ackNeeded?'<div class="ack-needed"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="5" r="4"/><line x1="5" y1="3" x2="5" y2="5.5"/><circle cx="5" cy="7" r="0.4" fill="currentColor"/></svg> Ack. letter needed</div>':''}
       </div>
-      <div class="record-right">
-        <div class="record-amount">$${d.ytd.toLocaleString()}</div>
-        <div class="record-date">YTD giving</div>
+      <div class="record-right" style="display:flex;align-items:center;gap:12px;">
+        <div>
+          <div class="record-amount">$${d.ytd.toLocaleString()}</div>
+          <div class="record-date">YTD giving</div>
+        </div>
+        <button class="btn btn-ghost btn-sm row-edit-btn" onclick="openDonorDrawer('edit','donor',${i})" title="Edit">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M11 2l3 3-8 8H3v-3l8-8z"/>
+          </svg>
+        </button>
       </div>
     </div>`).join('') || '<div style="padding:20px;color:var(--ink3);text-align:center;">No donors found</div>';
 
-  document.getElementById('org-list').innerHTML = orgs.map(o=>`
+  document.getElementById('org-list').innerHTML = orgs.map((o,i)=>`
     <div class="record-row">
       <div class="record-avatar org">${o.initials}</div>
       <div class="record-info">
         <div class="record-name">${o.name} <span style="font-size:11px;color:var(--ink3);font-weight:400">${o.id}</span></div>
         <div class="record-meta">Restricted: ${o.restricted||'—'} · Last gift: ${o.lastGift}</div>
       </div>
-      <div class="record-right">
-        <div class="record-amount">$${o.ytd.toLocaleString()}</div>
-        <div class="record-date">YTD giving</div>
+      <div class="record-right" style="display:flex;align-items:center;gap:12px;">
+        <div>
+          <div class="record-amount">$${o.ytd.toLocaleString()}</div>
+          <div class="record-date">YTD giving</div>
+        </div>
+        <button class="btn btn-ghost btn-sm row-edit-btn" onclick="openDonorDrawer('edit','org',${i})" title="Edit">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M11 2l3 3-8 8H3v-3l8-8z"/>
+          </svg>
+        </button>
       </div>
     </div>`).join('');
 
-  document.querySelector('#page-donors .pill-gray').textContent = fd.length+' donors';
+  const donorPill = document.getElementById('donor-count-pill');
+  const orgPill   = document.getElementById('org-count-pill');
+  if (donorPill) donorPill.textContent = fd.length + (fd.length===1?' donor':' donors');
+  if (orgPill)   orgPill.textContent   = orgs.length + (orgs.length===1?' org':' orgs');
 }
 
 function filterDonors(val) { renderDonors(val); }
@@ -2464,6 +2662,14 @@ document.addEventListener('click', e => {
   });
 });
 
+// Escape closes drawer or letter modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('donor-drawer')?.classList.contains('open')) closeDonorDrawer();
+    else if (document.getElementById('letter-modal-bg')?.classList.contains('open')) closeLetterModal();
+  }
+});
+
 // ══════════════════════════════════════════════════════════════════
 // ACK LETTERS
 // ══════════════════════════════════════════════════════════════════
@@ -2661,6 +2867,202 @@ function buildMinimalReceipt(donor) {
       No goods or services were provided in exchange for this contribution.
       Venite.org is a 501(c)(3) nonprofit. This receipt is for your records.
     </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DONOR / ORG DRAWER — add & edit
+// ══════════════════════════════════════════════════════════════════
+let _drawerMode   = 'new';   // 'new' | 'edit'
+let _drawerType   = 'donor'; // 'donor' | 'org'
+let _drawerIdx    = -1;      // index into liveDonors or liveOrgs (-1 = new)
+
+function openDonorDrawer(mode, type, idx) {
+  _drawerMode = mode;
+  _drawerType = type;
+  _drawerIdx  = idx !== undefined ? idx : -1;
+
+  const isEdit = mode === 'edit';
+  const isOrg  = type === 'org';
+
+  // Title
+  document.getElementById('drawer-title').textContent =
+    isEdit ? (isOrg ? 'Edit Organization' : 'Edit Donor')
+           : (isOrg ? 'New Organization'  : 'New Donor');
+
+  // Save button label
+  document.getElementById('drawer-save-btn').textContent =
+    isEdit ? 'Save changes' : (isOrg ? 'Add organization' : 'Add donor');
+
+  // Type toggle only shown when adding new
+  document.getElementById('drawer-type-row').style.display = isEdit ? 'none' : 'flex';
+  setDrawerType(type, true /* silent */);
+
+  // Org-specific fields
+  document.getElementById('dr-restricted-field').style.display = isOrg ? 'block' : 'none';
+  document.getElementById('drawer-name-label').textContent =
+    (isOrg ? 'Organization name' : 'Full name') + ' *';
+
+  // Danger zone
+  document.getElementById('drawer-danger-zone').style.display = isEdit ? 'block' : 'none';
+
+  // Pre-fill for edit
+  clearDrawerFields();
+  if (isEdit) {
+    const rec = isOrg
+      ? (liveOrgs || MOCK_ORGS)[idx]
+      : (liveDonors || MOCK_DONORS)[idx];
+    if (rec) populateDrawer(rec, isOrg);
+  }
+
+  // Open
+  document.getElementById('drawer-scrim').classList.add('open');
+  document.getElementById('donor-drawer').classList.add('open');
+  setTimeout(() => document.getElementById('dr-name').focus(), 280);
+}
+
+function closeDonorDrawer() {
+  document.getElementById('drawer-scrim').classList.remove('open');
+  document.getElementById('donor-drawer').classList.remove('open');
+}
+
+function setDrawerType(type, silent) {
+  _drawerType = type;
+  document.getElementById('dtype-donor').classList.toggle('active', type === 'donor');
+  document.getElementById('dtype-org').classList.toggle('active',   type === 'org');
+  document.getElementById('dr-restricted-field').style.display = type === 'org' ? 'block' : 'none';
+  document.getElementById('drawer-name-label').textContent =
+    (type === 'org' ? 'Organization name' : 'Full name') + ' *';
+  if (!silent) {
+    document.getElementById('drawer-save-btn').textContent =
+      type === 'org' ? 'Add organization' : 'Add donor';
+  }
+}
+
+function clearDrawerFields() {
+  ['dr-name','dr-email','dr-phone','dr-restricted','dr-notes','dr-ytd','dr-lastgift'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('dr-ack').selectedIndex = 2; // N/A default
+}
+
+function populateDrawer(rec, isOrg) {
+  document.getElementById('dr-name').value      = rec.name      || '';
+  document.getElementById('dr-notes').value     = rec.notes     || '';
+  document.getElementById('dr-ytd').value       = rec.ytd       || '';
+  document.getElementById('dr-lastgift').value  = rec.lastGift  !== '—' ? rec.lastGift : '';
+
+  if (isOrg) {
+    document.getElementById('dr-email').value      = rec.contact   || '';
+    document.getElementById('dr-restricted').value = rec.restricted|| '';
+  } else {
+    document.getElementById('dr-email').value      = rec.email     || '';
+    document.getElementById('dr-phone').value      = rec.phone     || '';
+  }
+
+  // Ack select
+  const ackVal = rec.ackNeeded === true ? 'N' : rec.ackNeeded === false ? 'Y' : '';
+  document.getElementById('dr-ack').value = ackVal;
+}
+
+async function saveDonorDrawer() {
+  const name = document.getElementById('dr-name').value.trim();
+  if (!name) { showToast('Name is required.', true); return; }
+
+  const isOrg  = _drawerType === 'org';
+  const isEdit = _drawerMode === 'edit';
+
+  const email      = document.getElementById('dr-email').value.trim();
+  const phone      = document.getElementById('dr-phone').value.trim();
+  const restricted = document.getElementById('dr-restricted').value.trim();
+  const notes      = document.getElementById('dr-notes').value.trim();
+  const ytd        = document.getElementById('dr-ytd').value.trim();
+  const lastGift   = document.getElementById('dr-lastgift').value.trim();
+  const ack        = document.getElementById('dr-ack').value;
+
+  if (!isSignedIn) {
+    showToast('Sign in to save donor records.', true);
+    return;
+  }
+
+  const btn = document.getElementById('drawer-save-btn');
+  const ind = document.getElementById('drawer-saving-indicator');
+  btn.disabled = true; ind.style.display = 'inline';
+
+  try {
+    if (isEdit) {
+      // ── UPDATE existing row ───────────────────────────────────
+      const rows   = isOrg ? (window._orgRows || []) : (window._donorRows || []);
+      const list   = isOrg ? (liveOrgs || MOCK_ORGS) : (liveDonors || MOCK_DONORS);
+      const rec    = list[_drawerIdx];
+      const rowIdx = findRowIndex(rows, rec.id, 0);
+
+      if (rowIdx < 0) { showToast('Row not found in sheet — try refreshing.', true); return; }
+
+      if (isOrg) {
+        // Orgs: A=ID, B=Name, C=Contact, D=Restricted, E=YTD, F=LastGift, G=Ack, H=Notes
+        await sheetsUpdate(`Organizations!B${rowIdx}:H${rowIdx}`,
+          [[name, email, restricted, ytd||rec.ytd, lastGift||rec.lastGift, ack, notes]]);
+      } else {
+        // Donors: A=ID, B=Name, C=Email, D=Phone, E=YTD, F=LastGift, G=Ack, H=Notes
+        await sheetsUpdate(`Donors!B${rowIdx}:H${rowIdx}`,
+          [[name, email, phone, ytd||rec.ytd, lastGift||rec.lastGift, ack, notes]]);
+      }
+      showToast('Record updated ✓');
+
+    } else {
+      // ── APPEND new row ────────────────────────────────────────
+      if (isOrg) {
+        const rows  = window._orgRows || [];
+        const newId = nextId(rows, 'O', 0);
+        await sheetsAppend('Organizations!A:H',
+          [[newId, name, email, restricted, ytd||'0', lastGift, ack, notes]]);
+      } else {
+        const rows  = window._donorRows || [];
+        const newId = nextId(rows, 'D', 0);
+        await sheetsAppend('Donors!A:H',
+          [[newId, name, email, phone, ytd||'0', lastGift, ack, notes]]);
+      }
+      showToast((isOrg ? 'Organization' : 'Donor') + ' added ✓');
+    }
+
+    closeDonorDrawer();
+    await loadAllData();
+
+  } catch(e) {
+    console.error(e);
+    showToast('Save failed — check permissions', true);
+  } finally {
+    btn.disabled = false; ind.style.display = 'none';
+  }
+}
+
+async function confirmDeleteDonor() {
+  const isOrg = _drawerType === 'org';
+  const list  = isOrg ? (liveOrgs || MOCK_ORGS) : (liveDonors || MOCK_DONORS);
+  const rec   = list[_drawerIdx];
+  if (!rec) return;
+
+  if (!confirm(`Delete "${rec.name}"?\n\nThis removes the record from the sheet but does NOT delete their transaction history.`)) return;
+
+  if (!isSignedIn) { showToast('Sign in to delete records.', true); return; }
+
+  const rows   = isOrg ? (window._orgRows || []) : (window._donorRows || []);
+  const rowIdx = findRowIndex(rows, rec.id, 0);
+  if (rowIdx < 0) { showToast('Row not found.', true); return; }
+
+  try {
+    // Clear the row content (Google Sheets API doesn't support true row deletion without batchUpdate)
+    const sheet = isOrg ? 'Organizations' : 'Donors';
+    const cols  = isOrg ? 'A:H' : 'A:H';
+    await sheetsUpdate(`${sheet}!A${rowIdx}:H${rowIdx}`, [['','','','','','','','']]);
+    showToast(rec.name + ' removed ✓');
+    closeDonorDrawer();
+    await loadAllData();
+  } catch(e) {
+    console.error(e);
+    showToast('Delete failed — check permissions', true);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
